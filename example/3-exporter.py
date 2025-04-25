@@ -10,6 +10,11 @@
 """
 
 import time
+import os
+
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from multiprocessing import freeze_support
 
 from exporter.config import FileType
@@ -20,10 +25,10 @@ from wxManager import DatabaseConnection, MessageType
 def export():
     st = time.time()
 
-    db_dir = ''  # 解析后的数据库路径，例如：./db_storage
-    db_version = 4  # 数据库版本，4 or 3
+    db_dir = './wxid_6dzb88y4j6z021/Msg'  # 解析后的数据库路径，例如：./db_storage
+    db_version = 3  # 数据库版本，4 or 3
 
-    wxid = 'wxid_00112233'  # 要导出好友的wxid
+    wxid = 'wxid_afk8jloxilr822'  # 要导出好友的wxid
     output_dir = './data/'  # 输出文件夹
 
     conn = DatabaseConnection(db_dir, db_version)  # 创建数据库连接
@@ -94,12 +99,12 @@ def batch_export_by_fmt():
 
     contact = database.get_contact_by_username(wxid)  # 查找某个联系人
     exporters = {
-        FileType.HTML: HtmlExporter,
+        # FileType.HTML: HtmlExporter,
         FileType.TXT: TxtExporter,
-        FileType.AI_TXT: AiTxtExporter,
-        FileType.MARKDOWN: MarkdownExporter,
-        FileType.XLSX: ExcelExporter,
-        FileType.DOCX: DocxExporter
+        # FileType.AI_TXT: AiTxtExporter,
+        # FileType.MARKDOWN: MarkdownExporter,
+        # FileType.XLSX: ExcelExporter,
+        # FileType.DOCX: DocxExporter
     }
     for file_type, exporter in exporters.items():
         execute = exporter(
@@ -108,7 +113,7 @@ def batch_export_by_fmt():
             output_dir=output_dir,
             type_=file_type,
             message_types=None,  # 要导出的消息类型，默认全导出
-            time_range=['2020-01-01 00:00:00', '2035-03-12 00:00:00'],  # 要导出的日期范围，默认全导出
+            time_range=['2025-04-01 00:00:00', '2025-04-25 00:00:00'],  # 要导出的日期范围，默认全导出
             group_members=None  # 指定导出群聊里某个或者几个群成员的聊天记录
         )
 

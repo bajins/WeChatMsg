@@ -9,11 +9,16 @@
 @Description : 
 """
 import time
+import os
+
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from wxManager import DatabaseConnection
 
-db_dir = ''  # 第一步解析后的数据库路径，例如：./wxid_xxxx/db_storage
-db_version = 4  # 数据库版本，4 or 3
+db_dir = './wxid_6dzb88y4j6z021/Msg'  # 第一步解析后的数据库路径，例如：./wxid_xxxx/db_storage
+db_version = 3  # 数据库版本，4 or 3
 
 conn = DatabaseConnection(db_dir, db_version)  # 创建数据库连接
 database = conn.get_interface()  # 获取数据库接口
@@ -23,6 +28,8 @@ cnt = 0
 contacts = database.get_contacts()
 for contact in contacts:
     print(contact)
+    if "韩镱键" in contact.nickname:
+        input()
     contact.small_head_img_blog = database.get_avatar_buffer(contact.wxid)
     cnt += 1
     if contact.is_chatroom:
