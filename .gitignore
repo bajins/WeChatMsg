@@ -24,3 +24,7 @@ server
 *.spec
 test*
 wordcloud.html
+/.venv
+/wxid_6dzb88y4j6z021
+*.pyd
+*.dll

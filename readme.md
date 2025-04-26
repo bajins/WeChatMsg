@@ -149,9 +149,9 @@
 ---
 > \[!IMPORTANT]
 > 
-> 声明：该项目有且仅有一个目的：“留痕”——我的数据我做主，前提是“我的数据”其次才是“我做主”，禁止任何人以任何形式将其用于任何非法用途，对于使用该程序所造成的任何后果，所有创作者不承担任何责任🙄<br>
+> 声明：该项目有且仅有一个目的："留痕"——我的数据我做主，前提是"我的数据"其次才是"我做主"，禁止任何人以任何形式将其用于任何非法用途，对于使用该程序所造成的任何后果，所有创作者不承担任何责任🙄<br>
 > 该软件不能找回删除的聊天记录，任何企图篡改微信聊天数据的想法都是无稽之谈。<br>
-> 本项目所有功能均建立在”前言“的基础之上，基于该项目的所有开发者均不能接受任何有悖于”前言“的功能需求，违者后果自负。<br>
+> 本项目所有功能均建立在"前言"的基础之上，基于该项目的所有开发者均不能接受任何有悖于"前言"的功能需求，违者后果自负。<br>
 > 如果该项目侵犯了您或您产品的任何权益，请联系我删除<br>
 > 软件贩子勿扰，违规违法勿扰，二次开发请务必遵守开源协议
 
@@ -203,7 +203,7 @@
 
 ## AI交流
 
-欢迎对“前言”中AI感兴趣的加入QQ群（不负责任何答疑），让我们一起探讨新技术，钻研新方案，将科技的力量融入生活，打造出一个真正具有情感的个人AI
+欢迎对"前言"中AI感兴趣的加入QQ群（不负责任何答疑），让我们一起探讨新技术，钻研新方案，将科技的力量融入生活，打造出一个真正具有情感的个人AI
 
 <div>
   <img src="doc/images/ai_qq.jpg" height="200">
@@ -214,3 +214,141 @@
 WeChatMsg is licensed under [MIT](./LICENSE).
 
 Copyright © 2022-2024 by SiYuan.
+
+# 微信记录导出工具打包指南
+
+本文档介绍如何将微信记录导出工具打包成Windows可执行文件(.exe)，以便于分发和使用。
+
+## 准备工作
+
+确保已安装所有依赖项：
+
+```bash
+pip install -r requirements.txt
+```
+
+## 最简便的打包方法
+
+使用预配置的批处理文件进行一键打包（推荐初次打包时使用）：
+
+```bash
+build_full_exe.bat
+```
+
+这将使用完整的模块集合和必要的DLL文件来构建，最大程度确保兼容性。构建完成后，可执行文件将位于`dist`文件夹下。
+
+## 方法一：使用PyInstaller打包 (推荐)
+
+PyInstaller通常能生成较小的可执行文件，并具有良好的兼容性。
+
+### 基本用法
+
+```bash
+python build_exe.py
+```
+
+这将在`dist`文件夹下生成`WeChatExporter.exe`文件。
+
+### 高级用法
+
+1. 清理之前的构建文件：
+
+```bash
+python build_exe.py --clean
+```
+
+2. 使用UPX进一步压缩(需要下载UPX)：
+
+```bash
+# 1. 从 https://github.com/upx/upx/releases 下载UPX
+# 2. 解压到项目目录下的upx文件夹
+python build_exe.py --upx
+```
+
+3. 如果遇到模块导入错误（如找不到email模块），使用收集所有模块的方式构建：
+
+```bash
+python build_exe.py --collect-all
+```
+
+4. 构建包含调试控制台的版本（如果需要查看错误输出）：
+
+```bash
+python build_exe.py --debug
+```
+
+5. 解决DLL加载错误的最佳选择：
+
+```bash
+python build_exe.py --collect-all --debug --copy-dlls
+```
+
+## 方法二：使用Nuitka打包
+
+Nuitka可以生成性能更高的可执行文件，但打包过程可能更耗时。
+
+### 基本用法
+
+```bash
+python nuitka_build.py
+```
+
+这将在当前目录下生成`WeChatExporter.exe`文件。
+
+### 高级用法
+
+1. 清理之前的构建文件：
+
+```bash
+python nuitka_build.py --clean
+```
+
+2. 构建无控制台窗口的版本：
+
+```bash
+python nuitka_build.py --no-console
+```
+
+## 打包文件体积优化建议
+
+1. 选择性包含模块，排除不必要的库
+2. 使用UPX压缩器(PyInstaller方式)
+3. 使用`--onefile`选项将所有内容打包为单个文件
+
+## 常见问题解决
+
+1. **ModuleNotFoundError: No module named 'email'**
+   - 解决方法：使用`--collect-all`参数重新构建
+   ```bash
+   python build_exe.py --collect-all
+   ```
+
+2. **ImportError: DLL load failed while importing pyexpat**
+   - 解决方法：使用`--copy-dlls`参数复制必要的DLL文件
+   ```bash
+   python build_exe.py --collect-all --debug --copy-dlls
+   ```
+   - 或者直接使用批处理文件：
+   ```bash
+   build_full_exe.bat
+   ```
+
+3. **闪退或无法启动**
+   - 解决方法：使用`--debug`参数构建，查看错误信息
+   ```bash
+   python build_exe.py --debug
+   ```
+
+4. **构建失败或运行时错误**
+   - 尝试最全面的构建方式：
+   ```bash
+   python build_exe.py --collect-all --debug --clean --copy-dlls
+   ```
+
+## 注意事项
+
+1. 打包过程可能需要5-15分钟，视电脑性能而定
+2. Nuitka方式通常会生成更快的可执行文件，但可能会更大
+3. PyInstaller方式使用UPX可以获得最小的文件体积
+4. 确保资源文件(如icon.ico)放在正确的位置
+5. 如果遇到DLL加载错误，首选使用`--copy-dlls`参数

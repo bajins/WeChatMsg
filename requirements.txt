@@ -3,15 +3,15 @@ psutil~=6.1.1
 yara-python
 pymem==1.14.0
 zstandard~=0.23.0
-pillow==11.0.0
+pillow>=8.2.0
 google==3.0.0
-protobuf==4.25.1
+protobuf>=3.19.0
 soupsieve==2.5
 lz4~=4.3.3
 requests~=2.32.3
 xmltodict~=0.14.2
-Crypto~=1.4.1
-pycryptodome
+# Removed Crypto~=1.4.1 as it conflicts with pycryptodome
+pycryptodome>=3.10.1
 cryptography
 openpyxl==3.1.5
 aiofiles~=24.1.0
@@ -21,3 +21,7 @@ lxml~=5.3.1
 typing_extensions~=4.12.2
 pysilk-mod==1.6.4
 python-docx
+pycryptodome
+tkcalendar>=1.6.1
+pyinstaller>=5.1
+nuitka
