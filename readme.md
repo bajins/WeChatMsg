@@ -1,354 +1,136 @@
-## 现已支持微信4.0，[点击查看详细设计文档](https://blog.lc044.love/post/13)
+# WeChatMsg GUI
 
-<h1 align="center">我的数据我做主</h1>
-<div align="center">
-    <a href="https://github.com/LC044/WeChatMsg/stargazers">
-        <img src="https://img.shields.io/github/stars/LC044/WeChatMsg.svg" />
-    </a>
-    <a href="https://memotrace.cn/" target="_blank">
-        <img alt="GitHub forks" src="https://img.shields.io/github/forks/LC044/WeChatMsg?color=eb6ea5">
-    </a>
-    <a href="https://memotrace.cn/" target="_blank">
-        <img src="https://img.shields.io/badge/WeChat-留痕-blue.svg">
-    </a>
-    <a target="_blank" href="https://memotrace.cn/">
-        <img alt="Hits" src="https://hits.b3log.org/LC044/memotrace.svg">
-    </a>
-    <a href="https://memotrace.cn/" target="_blank">
-        <img src="https://img.shields.io/github/license/LC044/WeChatMsg" />
-    </a>
-    <a href="https://github.com/LC044/WeChatMsg/releases" target="_blank">
-        <img alt="GitHub release (with filter)" src="https://img.shields.io/github/v/release/LC044/WeChatMsg">
-    </a>
-    <a href="https://memotrace.cn/" target="_blank">
-        <img alt="GitHub all releases" src="https://img.shields.io/github/downloads/LC044/WeChatMsg/total?color=3eb370">
-    </a>
-</div>
+这是一个基于原始留痕(MemoTrace)项目（https://github.com/LC044/WeChatMsg）二次开发的微信记录导出工具，提供了全新的图形用户界面(GUI)，使微信聊天记录的导出操作变得更加简单直观。
 
-<div align="center">
-    <a href="https://memotrace.cn/"><img src="https://memotrace.cn/img/logo%20-%20%E5%89%AF%E6%9C%AC.png" height="240"/></a>
-</div>
+## 预览
 
-<blockquote>
-<div style="background-color: #eaf7ea; border-radius: 10px; padding: 20px; position: relative;">
-  <div style="position: relative;">
-    <div style="position: absolute;top: 0;bottom: 0;left: 0;width: 2px;background-color: #000000;"></div>
-    <h2>前言</h2>
-    <div style="text-indent: 2em;">
-        <a align="center" href="https://memotrace.cn/"><img src="./doc/images/logo3.0.png"/></a>
-        <p style="text-indent:2em;">我深信有意义的不是微信，而是隐藏在对话框背后的一个个<strong>深刻故事</strong>。未来，每个人都能拥有AI的陪伴，而你的数据能够赋予它有关于你过去的珍贵记忆。我希望每个人都有将自己的生活痕迹👨‍👩‍👦👚🥗🏠️🚴🧋⛹️🛌🛀留存的权利，而不是遗忘💀。</p>
-        <p style="text-indent:2em;">AI的发展不仅仅是技术的提升，更是情感💞的延续。每一个对话、每一个互动都是生活中独一无二的片段，是真实而动人的情感交流。因此，我希望AI工作者们能够<strong>善用这些自己的数据</strong>，用于培训独特的、属于个体的人工智能。让<strong>个人AI成为生活中的朋友</strong>，能够理解、记录并分享我们的欢笑、泪水和成长。</p>
-        <p style="text-indent:2em;">那天，AI不再是高不可攀的存在，而是融入寻常百姓家的一部分。因为<strong>每个人能拥有自己的AI</strong>，将科技的力量融入生活的方方面面。这是一场关于真情实感的革命，一场让技术变得更加人性化的探索，让我们共同见证未来的美好。</p>
-        <p align="center"><strong>所以《留痕》</strong></p>
-    </div>
-  </div>
-</div>
-</blockquote>
+![设置界面预览](doc/images/GUI1.jpg)
+*设置与数据库解密*
 
-## 3.0 全面来袭
+![聊天记录导出预览](doc/images/GUI2.jpg)
+*联系人管理与聊天记录导出*
 
-### 全面适配微信4.0 [点击查看详细设计文档](https://blog.lc044.love/post/13)
 
-![数据库架构设计图](./doc/images/数据库架构设计图.png)
+## 项目特点
 
-  * 全新框架、重构底层逻辑
-  * 更低的内存占用
-  * 更快的导出速度
+- **多功能导出**：支持多种导出格式（HTML、TXT、DOCX、MARKDOWN、XLSX等）
+- **联系人管理**：可视化的联系人列表，支持搜索和筛选
+- **数据库解密**：内置微信3.x和4.0版本数据库解密功能
+- **批量操作**：支持批量导出多个联系人的聊天记录
+- **自定义选项**：可选择导出的消息类型和时间范围
 
-### 全新的Ui
-  * 更简洁
-  * 更流畅
-  * 更友好
-  * 前后端彻底分离
+## 系统要求
 
+- Windows操作系统（Windows 10或更高版本）
+- Python 3.7或更高版本
+- 已安装并登录的微信客户端
 
-## 🍉功能
-- [![](https://img.shields.io/badge/MemoTrace-官网-blue)](https://memotrace.cn/) 
-[![](https://img.shields.io/badge/GitHub-black.svg)](https://github.com/LC044/WeChatMsg)
-[![](https://img.shields.io/badge/Gitee-red.svg)](https://gitee.com/lc044/WeChatMsg)
-[![](https://img.shields.io/badge/Download-yellow.svg)](https://memotrace.cn/)
-- 🔒️🔑🔓️Windows本地微信数据库（支持微信4.0）
-- 还原微信聊天界面
-    - 🗨文本✅
-    - 🏝图片✅
-    - 拍一拍等系统消息✅ 
-- 导出数据
-  - 批量导出数据✅ 
-  - 导出联系人✅ 
-  - sqlite数据库✅ 
-  - HTML✅ 
-    - 文本、图片、视频、表情包、语音、文件、分享链接、系统消息、引用消息、合并转发的聊天记录、转账、音视频通话、位置分享、名片、小程序、视频号
-    - 支持时间轴跳转
-    - 引用消息可定位到原文
-    - 分享链接、小程序支持超链接跳转
-    - 合并转发的聊天记录支持展开
-  - CSV文档✅ 
-  - TXT文档✅ 
-  - Word文档✅
-- 分析聊天数据，做成[可视化年报](https://memotrace.cn/demo.html)
+## 安装步骤
 
-## 2024年度报告
+### 方法一（暂未打包）：直接下载可执行文件
 
-### 预览
+<!-- 1. 从项目发布页下载最新的可执行文件 -->
+<!-- 2. 解压后双击运行`WeChatExporter.exe` -->
 
-[个人年度报告在线预览](https://memotrace.cn/2024/single/)
+### 方法二：从源码安装
 
-[双人年度报告在线预览](https://memotrace.cn/2024Report/)
-
-手机可以扫码观看
-
-<img src="/doc/images/qrcode0.png" height="300px"/>
-
-![](/doc/images/demo1.gif)
-
-### 源码地址
-
-[https://github.com/LC044/AnnualReport](https://github.com/LC044/AnnualReport)
-
-# ⌛使用
-
-下载地址：[https://memotrace.cn/](https://memotrace.cn/)
-
-下载打包好的exe可执行文件，双击即可运行
-
-**⚠️注意：若出现闪退情况请右击选择用管理员身份运行exe程序，该程序不存在任何病毒，若杀毒软件提示有风险选择略过即可，key为none可重启电脑**
-
-## 源码运行
-
-[使用示例](./example/README.md)
-[详见开发者手册](./doc/开发者手册.md)
-
-[AI聊天](./MemoAI/readme.md)
-
-## PC端使用过程中部分问题解决（可参考）
-
-#### 🤔如果您在pc端使用的时候出现问题，可以先参考以下方面，如果仍未解决，可以在群里交流~
-
-* 不支持Win7
-* 不支持Mac(未来或许会实现)
-* 遇到问题四大法宝
-  * 首先要删除app/Database/Msg文件夹
-  * 重启微信
-  * 重启exe程序
-  * 重启电脑
-  * 换电脑
-如果您在运行可执行程序的时候出现闪退的现象，请右击软件使用管理员权限运行。
-
-[查看详细教程](https://memotrace.cn/doc/)
-
-# 🏆致谢
-
-<details>
-
-* PC微信工具:[https://github.com/xaoyaoo/PyWxDump](https://github.com/xaoyaoo/PyWxDump)
-* PyQt组件库:[https://github.com/PyQt5/CustomWidgets](https://github.com/PyQt5/CustomWidgets)
-* 得力小助手:[ChatGPT](https://chat.openai.com/)
-
-</details>
-
----
-> \[!IMPORTANT]
-> 
-> 声明：该项目有且仅有一个目的："留痕"——我的数据我做主，前提是"我的数据"其次才是"我做主"，禁止任何人以任何形式将其用于任何非法用途，对于使用该程序所造成的任何后果，所有创作者不承担任何责任🙄<br>
-> 该软件不能找回删除的聊天记录，任何企图篡改微信聊天数据的想法都是无稽之谈。<br>
-> 本项目所有功能均建立在"前言"的基础之上，基于该项目的所有开发者均不能接受任何有悖于"前言"的功能需求，违者后果自负。<br>
-> 如果该项目侵犯了您或您产品的任何权益，请联系我删除<br>
-> 软件贩子勿扰，违规违法勿扰，二次开发请务必遵守开源协议
-
-[![Star History Chart](https://api.star-history.com/svg?repos=LC044/WeChatMsg&type=Date)](https://star-history.com/?utm_source=bestxtools.com#LC044/WeChatMsg&Date)
-
-# 🤝贡献者
-
-<a href="https://github.com/lc044/wechatmsg/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=lc044/wechatmsg" />
-</a>
-
-## 赞助者名单
-
-感谢以下赞助者的慷慨支持：
-
-- [STDquantum](https://github.com/STDquantum)
-- [xuanli](https://github.com/xuanli)
-- [无名路人](https://github.com/wumingluren)
-- [时鹏亮](https://shipengliang.com)
-
-# 🎄温馨提示
-
-如果您在使用该软件的过程中
-
-* 发现新的bug
-* 有新的功能诉求
-* 操作比较繁琐
-* 觉得UI不够美观
-* 等其他给您造成困扰的地方
-
-请提起[issue](https://github.com/LC044/WeChatMsg/issues)，我将尽快为您解决问题
-
-如果您是一名开发者，有新的想法或建议，欢迎[fork](https://github.com/LC044/WeChatMsg/forks)
-该项目并发起[PR](https://github.com/LC044/WeChatMsg/pulls)，我将把您的名字写入贡献者名单中
-
-# 联系方式
-
-如果您遇到了问题，可以添加QQ群寻求帮助，由于精力有限，不能回答所有问题，所以还请您仔细阅读文档之后再考虑是否入群
-
-## 加群方式
-
-1. 关注官方公众号，回复：联系方式
-2. QQ扫码入群
-
-后续更新将会在公众号同步发布
-<div>
-  <img src="https://blog.lc044.love/static/img/b8df8c594a4cabaa0a62025767a3cfd9.weixin.webp">
-</div>
-
-## AI交流
-
-欢迎对"前言"中AI感兴趣的加入QQ群（不负责任何答疑），让我们一起探讨新技术，钻研新方案，将科技的力量融入生活，打造出一个真正具有情感的个人AI
-
-<div>
-  <img src="doc/images/ai_qq.jpg" height="200">
-</div>
-
-# License
-
-WeChatMsg is licensed under [MIT](./LICENSE).
-
-Copyright © 2022-2024 by SiYuan.
-
-# 微信记录导出工具打包指南
-
-本文档介绍如何将微信记录导出工具打包成Windows可执行文件(.exe)，以便于分发和使用。
-
-## 准备工作
-
-确保已安装所有依赖项：
-
-```bash
-pip install -r requirements.txt
-```
-
-## 最简便的打包方法
-
-使用预配置的批处理文件进行一键打包（推荐初次打包时使用）：
-
-```bash
-build_full_exe.bat
-```
-
-这将使用完整的模块集合和必要的DLL文件来构建，最大程度确保兼容性。构建完成后，可执行文件将位于`dist`文件夹下。
-
-## 方法一：使用PyInstaller打包 (推荐)
-
-PyInstaller通常能生成较小的可执行文件，并具有良好的兼容性。
-
-### 基本用法
-
-```bash
-python build_exe.py
-```
-
-这将在`dist`文件夹下生成`WeChatExporter.exe`文件。
-
-### 高级用法
-
-1. 清理之前的构建文件：
-
-```bash
-python build_exe.py --clean
-```
-
-2. 使用UPX进一步压缩(需要下载UPX)：
-
-```bash
-# 1. 从 https://github.com/upx/upx/releases 下载UPX
-# 2. 解压到项目目录下的upx文件夹
-python build_exe.py --upx
-```
-
-3. 如果遇到模块导入错误（如找不到email模块），使用收集所有模块的方式构建：
-
-```bash
-python build_exe.py --collect-all
-```
-
-4. 构建包含调试控制台的版本（如果需要查看错误输出）：
-
-```bash
-python build_exe.py --debug
-```
-
-5. 解决DLL加载错误的最佳选择：
-
-```bash
-python build_exe.py --collect-all --debug --copy-dlls
-```
-
-## 方法二：使用Nuitka打包
-
-Nuitka可以生成性能更高的可执行文件，但打包过程可能更耗时。
-
-### 基本用法
-
-```bash
-python nuitka_build.py
-```
-
-这将在当前目录下生成`WeChatExporter.exe`文件。
-
-### 高级用法
-
-1. 清理之前的构建文件：
-
-```bash
-python nuitka_build.py --clean
-```
-
-2. 构建无控制台窗口的版本：
-
-```bash
-python nuitka_build.py --no-console
-```
-
-## 打包文件体积优化建议
-
-1. 选择性包含模块，排除不必要的库
-2. 使用UPX压缩器(PyInstaller方式)
-3. 使用`--onefile`选项将所有内容打包为单个文件
-
-## 常见问题解决
-
-1. **ModuleNotFoundError: No module named 'email'**
-   - 解决方法：使用`--collect-all`参数重新构建
-   ```bash
-   python build_exe.py --collect-all
+1. 克隆项目代码：
+   ```
+   git clone https://github.com/LC044/WeChatMsg.git
+   cd WeChatMsg
    ```
 
-2. **ImportError: DLL load failed while importing pyexpat**
-   - 解决方法：使用`--copy-dlls`参数复制必要的DLL文件
-   ```bash
-   python build_exe.py --collect-all --debug --copy-dlls
+2. 安装依赖：
    ```
-   - 或者直接使用批处理文件：
-   ```bash
-   build_full_exe.bat
+   pip install -r requirements.txt
    ```
-
-3. **闪退或无法启动**
-   - 解决方法：使用`--debug`参数构建，查看错误信息
-   ```bash
-   python build_exe.py --debug
+   
+   或使用批处理文件：
+   ```
+   install.bat
    ```
 
-4. **构建失败或运行时错误**
-   - 尝试最全面的构建方式：
-   ```bash
-   python build_exe.py --collect-all --debug --clean --copy-dlls
+3. 运行程序：
+   ```
+   python run_wechat_export.py
    ```
 
-## 注意事项
+## 使用方法
 
-1. 打包过程可能需要5-15分钟，视电脑性能而定
-2. Nuitka方式通常会生成更快的可执行文件，但可能会更大
-3. PyInstaller方式使用UPX可以获得最小的文件体积
-4. 确保资源文件(如icon.ico)放在正确的位置
-5. 如果遇到DLL加载错误，首选使用`--copy-dlls`参数
+### 1. 数据库解密
+
+1. 在"设置"选项卡中，选择微信版本（3.x或4.0）
+2. 指定微信数据库目录（如不确定，可点击"测试连接"自动查找）
+3. 点击"解密微信数据库"按钮
+
+### 2. 联系人管理
+
+1. 解密成功后，切换到主界面
+2. 点击"加载联系人"按钮
+3. 使用搜索框查找特定联系人
+4. 点击联系人查看详细信息
+
+### 3. 导出聊天记录
+
+1. 选择需要导出记录的联系人
+2. 设置输出目录和导出格式
+3. 可选择消息类型和时间范围
+4. 点击"开始导出"按钮
+5. 等待导出完成，查看结果
+
+## 常见问题
+
+### 解密失败
+- 确保微信已登录并正常运行
+- 关闭微信后重新尝试
+- 检查是否选择了正确的微信版本
+
+### 联系人加载失败
+- 确保数据库解密成功
+- 检查数据库文件是否存在
+- 尝试重新解密数据库
+
+### 导出过程中出错
+- 检查输出目录是否有写入权限
+- 确保微信客户端没有锁定相关文件
+- 查看日志区域的错误信息
+
+
+
+## 技术支持
+
+如遇问题，请通过以下方式获取帮助：
+- 查看日志区域的错误信息
+- 在项目Issues页面提交问题
+- 参考原始MemoTrace项目的文档
+
+## 作者与贡献者
+
+### 主要贡献者
+- [Xyy-tj] - GUI界面重构与功能
+
+### 原始项目贡献者
+- [LC044](https://github.com/LC044) - 原始MemoTrace (WeChatMsg)项目作者
+- 原项目所有贡献者的努力与支持
+
+## 如何贡献
+
+欢迎为本项目做出贡献！您可以通过以下方式参与：
+
+1. Fork本仓库
+2. 创建您的特性分支 (`git checkout -b feature/amazing-feature`)
+3. 提交您的更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 开启一个Pull Request
+
+## 免责声明
+
+本工具仅用于个人数据备份，请勿用于非法用途。使用本工具导出的聊天记录应当遵守相关法律法规，不得侵犯他人隐私。
+
+## 许可证
+
+本项目遵循与原始MemoTrace项目相同的许可证。详情请参见[LICENSE](LICENSE)文件。
+
+## 致谢
+
+特别感谢[原始MemoTrace项目](https://github.com/LC044/WeChatMsg)的开发者提供的基础代码和功能支持。本项目在其基础上开发了更直观的用户界面和额外功能。
