@@ -81,6 +81,12 @@ from exporter import (
     DocxExporter, MarkdownExporter, ExcelExporter
 )
 
+# Import weekly report module
+try:
+    from weekly_report_gui import WeeklyReportFrame
+except ImportError:
+    WeeklyReportFrame = None
+
 
 class WeChatExportGUI:
     def __init__(self, root):
@@ -124,15 +130,19 @@ class WeChatExportGUI:
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # 创建只有两个主要标签页的新界面
-        self.create_contacts_tab()  # 联系人管理 (主界面)
-        self.create_settings_tab()  # 设置
-
         # Initialize database connection and other variables
         self.database = None
         self.contacts = []
         self.filtered_contacts = []
         self.load_button = None
+
+        # 创建主要标签页
+        self.create_contacts_tab()  # 联系人管理 (主界面)
+        self.create_settings_tab()  # 设置
+
+        # 如果周报生成模块可用，创建周报生成标签页
+        if WeeklyReportFrame is not None:
+            self.create_weekly_report_tab()  # 周报生成
 
         # Status bar
         self.status_var = tk.StringVar(value="就绪")
@@ -696,6 +706,26 @@ class WeChatExportGUI:
         self.export_log.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.export_log.config(state=tk.DISABLED)
 
+    def create_weekly_report_tab(self):
+        """创建周报生成标签页"""
+        weekly_report_tab = ttk.Frame(self.notebook, style="WeChat.TFrame")
+        self.notebook.add(weekly_report_tab, text="周报生成")
+
+        # 创建周报生成界面
+        self.weekly_report_frame = WeeklyReportFrame(
+            weekly_report_tab,
+            database=None,  # 初始时没有数据库连接
+            contact=None,   # 初始时没有选中联系人
+            config={
+                "report_api_url": self.config.get("report_api_url", "http://localhost:8000"),
+                "output_dir": self.config.get("output_dir", "./data/")
+            }
+        )
+        self.weekly_report_frame.pack(fill=tk.BOTH, expand=True)
+
+        # 记录日志
+        self.log_message_console("周报生成标签页已创建")
+
     def create_settings_tab(self):
         """创建设置标签页，整合解密和导出功能"""
         settings_tab = ttk.Frame(self.notebook, style="WeChat.TFrame")
@@ -740,6 +770,15 @@ class WeChatExportGUI:
         ttk.Label(output_frame, text="输出目录:", style="WeChat.TLabel").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
         ttk.Entry(output_frame, textvariable=self.output_dir, width=30).grid(row=0, column=1, padx=5, pady=5, sticky=tk.W+tk.E)
         ttk.Button(output_frame, text="浏览...", command=self.browse_output_dir).grid(row=0, column=2, padx=5, pady=5)
+
+        # 周报API设置
+        if WeeklyReportFrame is not None:
+            # 创建周报API URL变量
+            self.report_api_url = tk.StringVar(value=self.config.get("report_api_url", "http://localhost:8000"))
+
+            ttk.Label(output_frame, text="周报API地址:", style="WeChat.TLabel").grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+            ttk.Entry(output_frame, textvariable=self.report_api_url, width=30).grid(row=1, column=1, padx=5, pady=5, sticky=tk.W+tk.E)
+            ttk.Button(output_frame, text="测试连接", command=self.test_report_api).grid(row=1, column=2, padx=5, pady=5)
 
         # 测试和保存按钮
         btn_frame = ttk.Frame(base_settings_frame, style="WeChat.TFrame")
@@ -1043,6 +1082,10 @@ class WeChatExportGUI:
             if self.load_button:
                 self.root.after(0, lambda: self.load_button.config(state=tk.NORMAL, text="重新加载联系人"))
 
+            # 如果周报生成标签页存在，更新数据库
+            if hasattr(self, 'weekly_report_frame') and self.weekly_report_frame is not None:
+                self.root.after(0, lambda: self._update_weekly_report_tab())
+
         except Exception as e:
             error_msg = f"加载联系人时出错: {str(e)}"
             self.log_message(self.contacts_log, f"错误: {error_msg}")
@@ -1330,6 +1373,14 @@ class WeChatExportGUI:
         self._update_contact_details(contact)
         # 尝试加载并显示联系人头像
         self._load_avatar(contact)
+
+        # 如果周报生成标签页存在，更新联系人信息
+        if hasattr(self, 'weekly_report_frame') and self.weekly_report_frame is not None:
+            # 更新周报生成界面的联系人和数据库
+            self.weekly_report_frame.contact = contact
+            self.weekly_report_frame.database = self.database
+            # 记录日志
+            self.log_message_console(f"已更新周报生成标签页的联系人: {contact.remark}")
 
     def _update_contact_details(self, contact):
         """更新联系人详情显示"""
@@ -1873,6 +1924,65 @@ class WeChatExportGUI:
             self.log_message(self.decrypt_log, traceback.format_exc())
             self.status_var.set("解密失败")
 
+    def test_report_api(self):
+        """测试周报生成API连接"""
+        if not hasattr(self, 'report_api_url'):
+            messagebox.showerror("错误", "周报API地址未设置")
+            return
+
+        api_url = self.report_api_url.get()
+        if not api_url:
+            messagebox.showerror("错误", "请输入周报API地址")
+            return
+
+        self.log_message_console(f"测试周报API连接: {api_url}")
+        self.status_var.set("正在测试周报API连接...")
+
+        # 在单独的线程中运行测试
+        threading.Thread(target=self._test_report_api_thread, args=(api_url,), daemon=True).start()
+
+    def _test_report_api_thread(self, api_url):
+        """测试周报API连接的线程函数"""
+        try:
+            # 导入API客户端
+            from api_client import WeeklyReportClient
+
+            # 创建客户端
+            client = WeeklyReportClient(base_url=api_url)
+
+            # 测试连接
+            if client.health_check():
+                # 获取模板列表
+                templates = client.get_templates()
+                template_count = len(templates) if templates else 0
+
+                # 更新配置
+                self.config["report_api_url"] = api_url
+                try:
+                    import config
+                    config.save_config(self.config)
+                except ImportError:
+                    pass
+
+                # 显示成功消息
+                success_msg = f"连接成功! 找到 {template_count} 个模板"
+                self.root.after(0, lambda: messagebox.showinfo("测试成功", success_msg))
+                self.root.after(0, lambda: self.status_var.set("周报API连接成功"))
+
+                # 如果周报生成标签页存在，更新API地址
+                if hasattr(self, 'weekly_report_frame') and self.weekly_report_frame is not None:
+                    self.weekly_report_frame.api_client.base_url = api_url
+                    self.root.after(0, lambda: self.weekly_report_frame.check_service_status())
+            else:
+                # 显示失败消息
+                self.root.after(0, lambda: messagebox.showerror("测试失败", "无法连接到周报API服务"))
+                self.root.after(0, lambda: self.status_var.set("周报API连接失败"))
+        except Exception as e:
+            error_msg = f"测试周报API连接时出错: {str(e)}"
+            self.log_message_console(error_msg)
+            self.root.after(0, lambda: messagebox.showerror("错误", error_msg))
+            self.root.after(0, lambda: self.status_var.set("周报API连接失败"))
+
     def save_current_config(self):
         """保存当前配置"""
         try:
@@ -1885,6 +1995,10 @@ class WeChatExportGUI:
             if hasattr(self, 'format_combobox') and self.format_combobox.get():
                 self.config["last_export_format"] = self.format_combobox.get()
 
+            # 如果周报API地址已设置，也保存它
+            if hasattr(self, 'report_api_url'):
+                self.config["report_api_url"] = self.report_api_url.get()
+
             # 保存配置
             config.save_config(self.config)
             self.log_message_console("配置已保存")
@@ -1896,6 +2010,22 @@ class WeChatExportGUI:
             self.log_message_console(f"保存配置出错: {str(e)}")
             messagebox.showerror("错误", f"保存配置失败: {str(e)}")
             traceback.print_exc()
+
+    def _update_weekly_report_tab(self):
+        """更新周报生成标签页的数据库连接"""
+        if hasattr(self, 'weekly_report_frame') and self.weekly_report_frame is not None:
+            self.weekly_report_frame.database = self.database
+            self.log_message_console("已更新周报生成标签页的数据库连接")
+
+            # 更新配置
+            self.weekly_report_frame.config = {
+                "report_api_url": self.config.get("report_api_url", "http://localhost:8000"),
+                "output_dir": self.config.get("output_dir", "./data/")
+            }
+
+            # 检查服务状态
+            if hasattr(self.weekly_report_frame, 'check_service_status'):
+                self.weekly_report_frame.check_service_status()
 
     def log_message_console(self, message):
         """直接在控制台输出日志，不使用GUI组件"""
