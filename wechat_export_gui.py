@@ -138,7 +138,7 @@ class WeChatExportGUI:
         self.status_var = tk.StringVar(value="就绪")
         self.status_bar = ttk.Label(root, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
-        
+
         # 如果配置中有数据库目录，自动尝试连接
         if self.config.get("db_dir") and os.path.exists(self.config.get("db_dir")):
             self.root.after(1000, lambda: self.auto_connect_database())
@@ -165,25 +165,25 @@ class WeChatExportGUI:
             background="#cccccc",
             foreground="#888888"
         )
-        
+
         # 创建微信风格的样式
         style.configure(
             "WeChat.TLabelframe",
             background="#f5f5f5",
             borderwidth=0
         )
-        
+
         style.configure(
             "WeChat.TFrame",
             background="#f5f5f5"
         )
-        
+
         style.configure(
             "WeChat.TLabel",
             background="#f5f5f5",
             font=("微软雅黑", 9)
         )
-        
+
         style.configure(
             "WeChat.Search.TEntry",
             fieldbackground="#e6e6e6",
@@ -192,30 +192,30 @@ class WeChatExportGUI:
             darkcolor="#e6e6e6",
             borderwidth=1
         )
-        
+
         style.configure(
             "WeChat.Contacts.TFrame",
             background="#ffffff"
         )
-        
+
         # 自定义联系人项目样式
         style.configure(
             "Contact.TFrame",
             background="#ffffff"
         )
-        
+
         style.configure(
             "Contact.TLabel",
             background="#ffffff",
             font=("微软雅黑", 9)
         )
-        
+
         # 联系人悬停效果样式
         style.configure(
             "ContactHover.TFrame",
             background="#f0f0f0"
         )
-        
+
         style.configure(
             "ContactHover.TLabel",
             background="#f0f0f0",
@@ -271,11 +271,11 @@ class WeChatExportGUI:
         # 创建左右分栏的布局
         paned_window = ttk.PanedWindow(contacts_tab, orient=tk.HORIZONTAL)
         paned_window.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
-        
+
         # 左侧面板 - 数据库设置和联系人列表
         left_panel = ttk.Frame(paned_window, style="WeChat.TFrame")
         paned_window.add(left_panel, weight=2)
-        
+
         # 右侧面板 - 联系人详情和导出功能
         right_panel = ttk.Frame(paned_window, style="WeChat.TFrame")
         paned_window.add(right_panel, weight=3)
@@ -292,7 +292,7 @@ class WeChatExportGUI:
         # 数据库版本选择
         version_frame = ttk.Frame(db_frame, style="WeChat.TFrame")
         version_frame.grid(row=1, column=0, columnspan=3, padx=5, pady=5, sticky=tk.W+tk.E)
-        
+
         ttk.Label(version_frame, text="数据库版本:", style="WeChat.TLabel").pack(side=tk.LEFT, padx=5)
         ttk.Radiobutton(version_frame, text="微信 3.x", variable=self.db_version, value=3).pack(side=tk.LEFT, padx=15)
         ttk.Radiobutton(version_frame, text="微信 4.0", variable=self.db_version, value=4).pack(side=tk.LEFT, padx=15)
@@ -300,14 +300,14 @@ class WeChatExportGUI:
         # 按钮区域
         button_frame = ttk.Frame(db_frame, style="WeChat.TFrame")
         button_frame.grid(row=2, column=0, columnspan=3, padx=5, pady=10)
-        
+
         self.load_status_var = tk.StringVar(value="")
         load_status_label = ttk.Label(button_frame, textvariable=self.load_status_var, foreground="blue", style="WeChat.TLabel")
         load_status_label.pack(pady=2)
-        
+
         button_container = ttk.Frame(button_frame, style="WeChat.TFrame")
         button_container.pack(fill=tk.X, pady=5)
-        
+
         self.load_button = ttk.Button(
             button_container,
             text="加载联系人",
@@ -315,7 +315,7 @@ class WeChatExportGUI:
             style="WeChat.TButton"
         )
         self.load_button.pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5, expand=True, fill=tk.X)
-        
+
         self.test_button = ttk.Button(
             button_container,
             text="测试连接",
@@ -326,86 +326,86 @@ class WeChatExportGUI:
         # 联系人列表区域
         contacts_container = ttk.Frame(left_panel, style="WeChat.TFrame")
         contacts_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-        
+
         # 搜索框 - 微信风格
         search_frame = ttk.Frame(contacts_container, style="WeChat.TFrame")
         search_frame.pack(fill=tk.X, padx=0, pady=5)
-        
+
         search_container = ttk.Frame(search_frame, style="WeChat.TFrame")
         search_container.pack(fill=tk.X, pady=5, padx=5)
         search_container.configure(borderwidth=1, relief="solid")
-        
+
         search_icon = ttk.Label(search_container, text="🔍", style="WeChat.TLabel")
         search_icon.pack(side=tk.LEFT, padx=5)
-        
+
         search_entry = ttk.Entry(
-            search_container, 
+            search_container,
             textvariable=self.search_text,
             font=("微软雅黑", 9),
             style="WeChat.Search.TEntry",
             width=25
         )
         search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=5, padx=5)
-        
+
         # 联系人列表容器（使用Canvas和Scrollbar创建可滚动区域）
         contacts_list_frame = ttk.Frame(contacts_container, style="WeChat.TFrame")
         contacts_list_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=5)
-        
+
         # 创建滚动条
         scrollbar = ttk.Scrollbar(contacts_list_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
+
         # 创建Canvas用于滚动
-        contacts_canvas = tk.Canvas(contacts_list_frame, 
-                                   bg="#ffffff", 
+        contacts_canvas = tk.Canvas(contacts_list_frame,
+                                   bg="#ffffff",
                                    highlightthickness=0,
                                    yscrollcommand=scrollbar.set)
         contacts_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
+
         # 绑定滚动条与Canvas
         scrollbar.config(command=contacts_canvas.yview)
-        
+
         # 创建一个框架放在Canvas中，用于存放所有联系人项目
         self.contacts_frame = ttk.Frame(contacts_canvas, style="WeChat.Contacts.TFrame")
         contacts_canvas.create_window((0, 0), window=self.contacts_frame, anchor=tk.NW, tags="self.contacts_frame")
-        
+
         # 设置Canvas滚动区域
         def _configure_canvas(event):
             contacts_canvas.configure(scrollregion=contacts_canvas.bbox("all"), width=event.width)
-        
+
         self.contacts_frame.bind("<Configure>", _configure_canvas)
-        
+
         # 鼠标滚轮绑定
         def _on_mousewheel(event):
             contacts_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        
+
         contacts_canvas.bind_all("<MouseWheel>", _on_mousewheel)
-        
+
         # ========== 右侧面板 - 联系人详情和导出功能 ==========
-        
+
         # 联系人详情
         details_frame = ttk.LabelFrame(right_panel, text="联系人详情", style="WeChat.TLabelframe")
         details_frame.pack(fill=tk.X, padx=10, pady=10)
-        
+
         # 联系人信息头部
         contact_header = ttk.Frame(details_frame, style="WeChat.TFrame")
         contact_header.pack(fill=tk.X, padx=10, pady=10)
-        
+
         # 头像占位符 - 修改为可存储图像的标签
         self.avatar_label = ttk.Label(contact_header, text="👤", font=("Arial", 36), style="WeChat.TLabel")
         self.avatar_label.pack(side=tk.LEFT, padx=10)
-        
+
         # 联系人基本信息
         contact_info = ttk.Frame(contact_header, style="WeChat.TFrame")
         contact_info.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10)
-        
+
         ttk.Label(contact_info, text="选中的联系人:", style="WeChat.TLabel").pack(anchor=tk.W, pady=2)
         ttk.Entry(contact_info, textvariable=self.selected_wxid, state="readonly", width=30).pack(anchor=tk.W, pady=2, fill=tk.X)
-        
+
         # 详细信息
         self.contact_details = scrolledtext.ScrolledText(
-            details_frame, 
-            wrap=tk.WORD, 
+            details_frame,
+            wrap=tk.WORD,
             height=10,
             font=("微软雅黑", 9),
             background="#ffffff",
@@ -436,17 +436,17 @@ class WeChatExportGUI:
         # 替换原始的输入框为日历选择器
         try:
             from tkcalendar import DateEntry
-            
+
             ttk.Label(time_frame, text="开始时间:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
-            
+
             # 使用DateEntry替代普通Entry
-            self.start_date_entry = DateEntry(time_frame, width=18, 
-                                    background='darkblue', foreground='white', 
-                                    borderwidth=2, 
+            self.start_date_entry = DateEntry(time_frame, width=18,
+                                    background='darkblue', foreground='white',
+                                    borderwidth=2,
                                     date_pattern='yyyy-mm-dd',
                                     year=2020, month=1, day=1)
             self.start_date_entry.grid(row=0, column=1, padx=5, pady=5)
-            
+
             # 添加时间选择
             time_frame1 = ttk.Frame(time_frame)
             time_frame1.grid(row=0, column=2, padx=(0, 5), pady=5)
@@ -461,17 +461,17 @@ class WeChatExportGUI:
             self.start_second = ttk.Spinbox(time_frame1, from_=0, to=59, width=3, format="%02.0f")
             self.start_second.set("00")
             self.start_second.pack(side=tk.LEFT)
-            
+
             ttk.Label(time_frame, text="结束时间:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
-            
+
             # 使用DateEntry替代普通Entry
-            self.end_date_entry = DateEntry(time_frame, width=18, 
-                                    background='darkblue', foreground='white', 
+            self.end_date_entry = DateEntry(time_frame, width=18,
+                                    background='darkblue', foreground='white',
                                     borderwidth=2,
                                     date_pattern='yyyy-mm-dd',
                                     year=2035, month=12, day=31)
             self.end_date_entry.grid(row=1, column=1, padx=5, pady=5)
-            
+
             # 添加时间选择
             time_frame2 = ttk.Frame(time_frame)
             time_frame2.grid(row=1, column=2, padx=(0, 5), pady=5)
@@ -486,7 +486,7 @@ class WeChatExportGUI:
             self.end_second = ttk.Spinbox(time_frame2, from_=0, to=59, width=3, format="%02.0f")
             self.end_second.set("59")
             self.end_second.pack(side=tk.LEFT)
-            
+
         except ImportError:
             # 如果tkcalendar不可用，回退到普通的输入框
             ttk.Label(time_frame, text="开始时间:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
@@ -542,7 +542,7 @@ class WeChatExportGUI:
         log_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         self.contacts_log = scrolledtext.ScrolledText(
-            log_frame, 
+            log_frame,
             wrap=tk.WORD,
             height=8,
             font=("微软雅黑", 9),
@@ -551,6 +551,9 @@ class WeChatExportGUI:
         )
         self.contacts_log.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.contacts_log.config(state=tk.DISABLED)
+
+        # 同时将contacts_log设置为export_log，以便在导出时使用
+        self.export_log = self.contacts_log
 
     def create_export_tab(self):
         """Create the export records tab"""
@@ -583,17 +586,17 @@ class WeChatExportGUI:
         # 替换原始的输入框为日历选择器
         try:
             from tkcalendar import DateEntry
-            
+
             ttk.Label(time_frame, text="开始时间:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
-            
+
             # 使用DateEntry替代普通Entry
-            self.start_date_entry = DateEntry(time_frame, width=18, 
-                                      background='darkblue', foreground='white', 
-                                      borderwidth=2, 
+            self.start_date_entry = DateEntry(time_frame, width=18,
+                                      background='darkblue', foreground='white',
+                                      borderwidth=2,
                                       date_pattern='yyyy-mm-dd',
                                       year=2020, month=1, day=1)
             self.start_date_entry.grid(row=0, column=1, padx=5, pady=5)
-            
+
             # 添加时间选择
             time_frame1 = ttk.Frame(time_frame)
             time_frame1.grid(row=0, column=2, padx=(0, 5), pady=5)
@@ -608,17 +611,17 @@ class WeChatExportGUI:
             self.start_second = ttk.Spinbox(time_frame1, from_=0, to=59, width=3, format="%02.0f")
             self.start_second.set("00")
             self.start_second.pack(side=tk.LEFT)
-            
+
             ttk.Label(time_frame, text="结束时间:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
-            
+
             # 使用DateEntry替代普通Entry
-            self.end_date_entry = DateEntry(time_frame, width=18, 
-                                    background='darkblue', foreground='white', 
+            self.end_date_entry = DateEntry(time_frame, width=18,
+                                    background='darkblue', foreground='white',
                                     borderwidth=2,
                                     date_pattern='yyyy-mm-dd',
                                     year=2035, month=12, day=31)
             self.end_date_entry.grid(row=1, column=1, padx=5, pady=5)
-            
+
             # 添加时间选择
             time_frame2 = ttk.Frame(time_frame)
             time_frame2.grid(row=1, column=2, padx=(0, 5), pady=5)
@@ -633,7 +636,7 @@ class WeChatExportGUI:
             self.end_second = ttk.Spinbox(time_frame2, from_=0, to=59, width=3, format="%02.0f")
             self.end_second.set("59")
             self.end_second.pack(side=tk.LEFT)
-            
+
         except ImportError:
             # 如果tkcalendar不可用，回退到普通的输入框
             ttk.Label(time_frame, text="开始时间:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
@@ -697,68 +700,68 @@ class WeChatExportGUI:
         """创建设置标签页，整合解密和导出功能"""
         settings_tab = ttk.Frame(self.notebook, style="WeChat.TFrame")
         self.notebook.add(settings_tab, text="设置")
-        
+
         # 创建左右分栏布局
         paned_window = ttk.PanedWindow(settings_tab, orient=tk.HORIZONTAL)
         paned_window.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
         # 左侧面板 - 基本设置
         left_panel = ttk.Frame(paned_window, style="WeChat.TFrame")
         paned_window.add(left_panel, weight=1)
-        
+
         # 右侧面板 - 数据库解密
         right_panel = ttk.Frame(paned_window, style="WeChat.TFrame")
         paned_window.add(right_panel, weight=1)
-        
+
         # ========== 左侧面板 - 基本设置 ==========
         base_settings_frame = ttk.LabelFrame(left_panel, text="基本设置", style="WeChat.TLabelframe")
         base_settings_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
+
         # 数据库目录设置
         db_frame = ttk.Frame(base_settings_frame, style="WeChat.TFrame")
         db_frame.pack(fill=tk.X, padx=10, pady=10)
-        
+
         ttk.Label(db_frame, text="数据库目录:", style="WeChat.TLabel").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
         ttk.Entry(db_frame, textvariable=self.db_dir, width=30).grid(row=0, column=1, padx=5, pady=5, sticky=tk.W+tk.E)
         ttk.Button(db_frame, text="浏览...", command=self.browse_db_dir).grid(row=0, column=2, padx=5, pady=5)
-        
+
         # 数据库版本设置
         version_frame = ttk.Frame(base_settings_frame, style="WeChat.TFrame")
         version_frame.pack(fill=tk.X, padx=10, pady=5)
-        
+
         ttk.Label(version_frame, text="数据库版本:", style="WeChat.TLabel").pack(side=tk.LEFT, padx=5)
         ttk.Radiobutton(version_frame, text="微信 3.x", variable=self.db_version, value=3).pack(side=tk.LEFT, padx=15)
         ttk.Radiobutton(version_frame, text="微信 4.0", variable=self.db_version, value=4).pack(side=tk.LEFT, padx=15)
-        
+
         # 输出目录设置
         output_frame = ttk.Frame(base_settings_frame, style="WeChat.TFrame")
         output_frame.pack(fill=tk.X, padx=10, pady=10)
-        
+
         ttk.Label(output_frame, text="输出目录:", style="WeChat.TLabel").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
         ttk.Entry(output_frame, textvariable=self.output_dir, width=30).grid(row=0, column=1, padx=5, pady=5, sticky=tk.W+tk.E)
         ttk.Button(output_frame, text="浏览...", command=self.browse_output_dir).grid(row=0, column=2, padx=5, pady=5)
-        
+
         # 测试和保存按钮
         btn_frame = ttk.Frame(base_settings_frame, style="WeChat.TFrame")
         btn_frame.pack(fill=tk.X, padx=10, pady=10)
-        
+
         ttk.Button(
-            btn_frame, 
-            text="测试数据库连接", 
+            btn_frame,
+            text="测试数据库连接",
             command=self.test_database_connection
         ).pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
-        
+
         ttk.Button(
-            btn_frame, 
-            text="保存设置", 
+            btn_frame,
+            text="保存设置",
             command=self.save_current_config,
             style="WeChat.TButton"
         ).pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
-        
+
         # 最近使用的数据库
         recent_db_frame = ttk.LabelFrame(base_settings_frame, text="最近使用的数据库", style="WeChat.TLabelframe")
         recent_db_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
         # 创建最近数据库列表
         self.recent_db_listbox = tk.Listbox(
             recent_db_frame,
@@ -769,36 +772,36 @@ class WeChatExportGUI:
         )
         self.recent_db_listbox.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.recent_db_listbox.bind('<<ListboxSelect>>', self.on_recent_db_select)
-        
+
         # 填充最近数据库列表
         for db_item in self.config.get("recent_databases", []):
             if isinstance(db_item, dict) and "path" in db_item:
                 display_text = f"{db_item['path']} (微信 {db_item['version']})"
                 self.recent_db_listbox.insert(tk.END, display_text)
-        
+
         # ========== 右侧面板 - 数据库解密 ==========
         decrypt_frame = ttk.LabelFrame(right_panel, text="数据库解密", style="WeChat.TLabelframe")
         decrypt_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
+
         # WeChat版本选择
         version_frame = ttk.Frame(decrypt_frame, style="WeChat.TFrame")
         version_frame.pack(fill=tk.X, padx=10, pady=10)
-        
+
         ttk.Label(version_frame, text="微信版本:", style="WeChat.TLabel").pack(side=tk.LEFT, padx=5)
         self.decrypt_version = tk.IntVar(value=3)
         ttk.Radiobutton(version_frame, text="微信 3.x", variable=self.decrypt_version, value=3).pack(side=tk.LEFT, padx=15)
         ttk.Radiobutton(version_frame, text="微信 4.0", variable=self.decrypt_version, value=4).pack(side=tk.LEFT, padx=15)
-        
+
         # 解密按钮
         decrypt_button = ttk.Button(decrypt_frame, text="开始解密", command=self.start_decrypt, style="WeChat.TButton")
         decrypt_button.pack(pady=10)
-        
+
         # 日志区域
         log_frame = ttk.LabelFrame(decrypt_frame, text="解密日志", style="WeChat.TLabelframe")
         log_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
         self.decrypt_log = scrolledtext.ScrolledText(
-            log_frame, 
+            log_frame,
             wrap=tk.WORD,
             height=8,
             font=("微软雅黑", 9),
@@ -807,11 +810,11 @@ class WeChatExportGUI:
         )
         self.decrypt_log.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.decrypt_log.config(state=tk.DISABLED)
-        
+
         # 历史解密记录区域
         history_frame = ttk.LabelFrame(decrypt_frame, text="历史解密记录", style="WeChat.TLabelframe")
         history_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
         # 创建历史解密记录列表
         self.decrypt_history_listbox = tk.Listbox(
             history_frame,
@@ -822,7 +825,7 @@ class WeChatExportGUI:
         )
         self.decrypt_history_listbox.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.decrypt_history_listbox.bind('<<ListboxSelect>>', self.on_decrypt_history_select)
-        
+
         # 填充历史解密记录列表
         for history_item in self.config.get("decrypt_history", []):
             if isinstance(history_item, dict) and "wxid" in history_item:
@@ -834,18 +837,18 @@ class WeChatExportGUI:
         selection = self.recent_db_listbox.curselection()
         if not selection:
             return
-            
+
         index = selection[0]
         if index >= len(self.config.get("recent_databases", [])):
             return
-            
+
         # 获取选定的数据库
         db_item = self.config["recent_databases"][index]
         if isinstance(db_item, dict) and "path" in db_item:
             # 设置数据库路径和版本
             self.db_dir.set(db_item["path"])
             self.db_version.set(db_item["version"])
-            
+
             # 尝试连接数据库
             self.root.after(100, self.test_database_connection)
 
@@ -854,18 +857,18 @@ class WeChatExportGUI:
         selection = self.decrypt_history_listbox.curselection()
         if not selection:
             return
-            
+
         index = selection[0]
         if index >= len(self.config.get("decrypt_history", [])):
             return
-            
+
         # 获取选定的历史记录
         history_item = self.config["decrypt_history"][index]
         if isinstance(history_item, dict) and "db_path" in history_item:
             # 设置数据库路径和版本
             self.db_dir.set(history_item["db_path"])
             self.db_version.set(history_item["version"])
-            
+
             # 尝试连接数据库
             self.root.after(100, self.test_database_connection)
 
@@ -1060,7 +1063,7 @@ class WeChatExportGUI:
         if not hasattr(self, 'contacts_frame') or self.contacts_frame is None:
             self.log_message(self.contacts_log, "错误: contacts_frame 不存在或为 None")
             return
-        
+
         # 清除现有的联系人列表
         try:
             # 删除所有现有的联系人项目
@@ -1068,14 +1071,14 @@ class WeChatExportGUI:
                 widget.destroy()
         except Exception as e:
             self.log_message(self.contacts_log, f"清除联系人列表出错: {str(e)}")
-        
+
         if not self.filtered_contacts:
             self.log_message(self.contacts_log, "警告: filtered_contacts 为空")
             return
 
         try:
             self.log_message(self.contacts_log, f"开始添加 {len(self.filtered_contacts)} 个联系人到列表")
-            
+
             # 按类型对联系人分组
             groups = {
                 "星标联系人": [],
@@ -1083,7 +1086,7 @@ class WeChatExportGUI:
                 "群聊": [],
                 "好友": []
             }
-            
+
             for contact in self.filtered_contacts:
                 if hasattr(contact, 'type') and contact.type == 'star':
                     groups["星标联系人"].append(contact)
@@ -1093,7 +1096,7 @@ class WeChatExportGUI:
                     groups["群聊"].append(contact)
                 else:
                     groups["好友"].append(contact)
-            
+
             # 创建一个装载所有要创建的联系人项目信息的列表
             # 延迟创建实际的UI组件，以减少UI事件循环的压力
             items_to_create = []
@@ -1104,10 +1107,10 @@ class WeChatExportGUI:
                         'type': 'group',
                         'text': f"--- {group_name} ({len(contacts)}) ---",
                     })
-                    
+
                     # 只添加前100个联系人，超过后添加"加载更多"按钮
                     MAX_INITIAL_CONTACTS = 100
-                    
+
                     # 添加该分组的联系人
                     for i, contact in enumerate(contacts[:MAX_INITIAL_CONTACTS]):
                         items_to_create.append({
@@ -1115,7 +1118,7 @@ class WeChatExportGUI:
                             'contact': contact,
                             'position': i
                         })
-                    
+
                     # 如果超过限制，添加"加载更多"按钮
                     if len(contacts) > MAX_INITIAL_CONTACTS:
                         items_to_create.append({
@@ -1124,44 +1127,44 @@ class WeChatExportGUI:
                             'contacts': contacts[MAX_INITIAL_CONTACTS:],
                             'start_index': MAX_INITIAL_CONTACTS
                         })
-            
+
             # 一次性创建所有UI组件，减少重绘次数
             self.root.update_idletasks()  # 刷新界面，避免卡顿感
-            
+
             total_added = 0
             for item in items_to_create:
                 if item['type'] == 'group':
                     # 创建分组标题
                     group_label = ttk.Label(
-                        self.contacts_frame, 
+                        self.contacts_frame,
                         text=item['text'],
                         style="WeChat.TLabel",
                         background="#f0f0f0",
                         foreground="#888888"
                     )
                     group_label.pack(fill=tk.X, pady=(10, 5), padx=5)
-                    
+
                 elif item['type'] == 'contact':
                     # 创建联系人项目
                     self._create_contact_item(item['contact'])
                     total_added += 1
-                    
+
                 elif item['type'] == 'load_more':
                     # 创建"加载更多"按钮
                     load_more_frame = ttk.Frame(self.contacts_frame, style="Contact.TFrame")
                     load_more_frame.pack(fill=tk.X, pady=2, padx=5)
-                    
+
                     load_more_btn = ttk.Button(
-                        load_more_frame, 
+                        load_more_frame,
                         text=f"加载更多 {item['group']} ({len(item['contacts'])}个)",
                         command=lambda g=item['group'], c=item['contacts']: self._load_more_contacts(g, c)
                     )
                     load_more_btn.pack(fill=tk.X, pady=2)
-                
+
                 # 每创建10个项目就更新一次界面，平衡性能和响应性
                 if total_added % 10 == 0:
                     self.root.update_idletasks()
-            
+
             self.log_message(self.contacts_log, f"联系人列表更新完成，添加了 {total_added} 个联系人")
         except Exception as e:
             self.log_message(self.contacts_log, f"更新联系人列表时出错: {str(e)}")
@@ -1172,16 +1175,16 @@ class WeChatExportGUI:
         try:
             # 使用缓存检查是否已经加载过此联系人的头像
             avatar_key = f"avatar_{contact.wxid}"
-            
+
             # 创建联系人项目框架
             contact_frame = ttk.Frame(self.contacts_frame, style="Contact.TFrame")
             contact_frame.pack(fill=tk.X, pady=2, padx=5)
-            
+
             # 创建头像容器（固定大小）
             avatar_container = ttk.Frame(contact_frame, style="Contact.TFrame", width=32, height=32)
             avatar_container.pack(side=tk.LEFT, padx=(5, 10))
             avatar_container.pack_propagate(False)  # 保持固定大小
-            
+
             # 确定默认头像类型
             if hasattr(contact, 'is_chatroom') and contact.is_chatroom:
                 avatar_text = "👥"  # 群聊图标
@@ -1189,30 +1192,30 @@ class WeChatExportGUI:
                 avatar_text = "📢"  # 公众号图标
             else:
                 avatar_text = "👤"  # 普通联系人图标
-            
+
             # 创建头像标签
             avatar_label = ttk.Label(
-                avatar_container, 
-                text=avatar_text, 
+                avatar_container,
+                text=avatar_text,
                 font=("Arial", 16),
                 style="Contact.TLabel",
                 anchor=tk.CENTER
             )
             avatar_label.pack(fill=tk.BOTH, expand=True)
-            
+
             # 获取显示名称
             display_name = contact.nickname if hasattr(contact, 'nickname') and contact.nickname else "未知"
             if hasattr(contact, 'remark') and contact.remark:
                 display_name = f"{contact.remark} ({contact.nickname})"
-            
+
             # 创建联系人名称标签
             name_label = ttk.Label(
-                contact_frame, 
+                contact_frame,
                 text=display_name,
                 style="Contact.TLabel"
             )
             name_label.pack(side=tk.LEFT, fill=tk.X, expand=True, anchor=tk.W)
-            
+
             # 异步加载头像（不阻塞UI线程）
             if hasattr(self, 'contact_avatar_cache') and avatar_key in self.contact_avatar_cache:
                 # 从缓存中使用头像
@@ -1227,16 +1230,16 @@ class WeChatExportGUI:
                     args=(contact, avatar_label),
                     daemon=True
                 ).start()
-            
+
             # 绑定点击事件
             contact_frame.bind("<Button-1>", lambda e, c=contact: self._on_contact_item_select(c))
             avatar_label.bind("<Button-1>", lambda e, c=contact: self._on_contact_item_select(c))
             name_label.bind("<Button-1>", lambda e, c=contact: self._on_contact_item_select(c))
-            
+
             # 添加悬停效果
             contact_frame.bind("<Enter>", lambda e, frame=contact_frame: self._on_contact_hover_enter(frame))
             contact_frame.bind("<Leave>", lambda e, frame=contact_frame: self._on_contact_hover_leave(frame))
-            
+
         except Exception as e:
             self.log_message(self.contacts_log, f"创建联系人项目时出错: {str(e)}")
 
@@ -1244,21 +1247,21 @@ class WeChatExportGUI:
         """加载更多联系人"""
         # 每次加载的联系人数量
         BATCH_SIZE = 50
-        
+
         contacts_to_load = remaining_contacts[:BATCH_SIZE]
         for contact in contacts_to_load:
             self._create_contact_item(contact)
-        
+
         # 更新界面
         self.root.update_idletasks()
-        
+
         # 若还有剩余，添加新的"加载更多"按钮
         if len(remaining_contacts) > BATCH_SIZE:
             load_more_frame = ttk.Frame(self.contacts_frame, style="Contact.TFrame")
             load_more_frame.pack(fill=tk.X, pady=2, padx=5)
-            
+
             load_more_btn = ttk.Button(
-                load_more_frame, 
+                load_more_frame,
                 text=f"加载更多 {group_name} ({len(remaining_contacts) - BATCH_SIZE}个)",
                 command=lambda g=group_name, c=remaining_contacts[BATCH_SIZE:]: self._load_more_contacts(g, c)
             )
@@ -1270,9 +1273,9 @@ class WeChatExportGUI:
             # 初始化头像缓存字典（如果尚未初始化）
             if not hasattr(self, 'contact_avatar_cache'):
                 self.contact_avatar_cache = {}
-                
+
             avatar_key = f"avatar_{contact.wxid}"
-            
+
             # 获取头像数据
             avatar_buffer = None
             try:
@@ -1292,7 +1295,7 @@ class WeChatExportGUI:
             except Exception:
                 # 忽略错误，使用默认头像
                 pass
-                
+
             # 如果获取到头像数据
             if avatar_buffer:
                 # 使用PIL处理图像
@@ -1301,10 +1304,10 @@ class WeChatExportGUI:
                 img = img.resize((32, 32), Image.LANCZOS)
                 # 创建Tkinter兼容的图像
                 photo = ImageTk.PhotoImage(img)
-                
+
                 # 保存到缓存中
                 self.contact_avatar_cache[avatar_key] = photo
-                
+
                 # 在主线程更新UI
                 self.root.after(0, lambda: self._update_avatar_label(avatar_label, photo))
         except Exception as e:
@@ -1327,7 +1330,7 @@ class WeChatExportGUI:
         self._update_contact_details(contact)
         # 尝试加载并显示联系人头像
         self._load_avatar(contact)
-    
+
     def _update_contact_details(self, contact):
         """更新联系人详情显示"""
         # 更新联系人详情
@@ -1338,40 +1341,40 @@ class WeChatExportGUI:
         self.contact_details.tag_configure("title", font=("微软雅黑", 10, "bold"))
         self.contact_details.tag_configure("content", font=("微软雅黑", 9))
         self.contact_details.tag_configure("section", font=("微软雅黑", 10, "bold"), foreground="#07c160")
-        
+
         # 基本信息部分
         self.contact_details.insert(tk.END, "基本信息\n", "section")
-        
+
         self.contact_details.insert(tk.END, "微信ID: ", "title")
         self.contact_details.insert(tk.END, f"{contact.wxid}\n", "content")
-        
+
         self.contact_details.insert(tk.END, "昵称: ", "title")
         self.contact_details.insert(tk.END, f"{contact.nickname}\n", "content")
-        
+
         if hasattr(contact, 'remark') and contact.remark:
             self.contact_details.insert(tk.END, "备注: ", "title")
             self.contact_details.insert(tk.END, f"{contact.remark}\n", "content")
-        
+
         if hasattr(contact, 'alias') and contact.alias:
             self.contact_details.insert(tk.END, "别名: ", "title")
             self.contact_details.insert(tk.END, f"{contact.alias}\n", "content")
-        
+
         # 添加类型信息
         self.contact_details.insert(tk.END, "\n类型信息\n", "section")
-        
+
         if hasattr(contact, 'is_chatroom') and contact.is_chatroom:
             self.contact_details.insert(tk.END, "类型: ", "title")
             self.contact_details.insert(tk.END, "群聊\n", "content")
-            
+
             # 获取群成员信息
             if self.database:
                 try:
                     chatroom_members = self.database.get_chatroom_members(contact.wxid)
                     member_count = len(chatroom_members) if chatroom_members else 0
-                    
+
                     self.contact_details.insert(tk.END, "成员数: ", "title")
                     self.contact_details.insert(tk.END, f"{member_count}\n", "content")
-                    
+
                     if member_count > 0 and member_count <= 20:  # 限制显示的成员数量
                         self.contact_details.insert(tk.END, "\n群成员列表: \n", "title")
                         for i, member in enumerate(chatroom_members[:20]):
@@ -1379,7 +1382,7 @@ class WeChatExportGUI:
                             if hasattr(member, 'display_name') and member.display_name:
                                 member_name = member.display_name
                             self.contact_details.insert(tk.END, f"{i+1}. {member_name}\n", "content")
-                        
+
                         if member_count > 20:
                             self.contact_details.insert(tk.END, "...(更多)\n", "content")
                 except Exception as e:
@@ -1391,7 +1394,7 @@ class WeChatExportGUI:
         else:
             self.contact_details.insert(tk.END, "类型: ", "title")
             self.contact_details.insert(tk.END, "个人\n", "content")
-        
+
         # 添加操作提示
         self.contact_details.insert(tk.END, "\n操作提示\n", "section")
         self.contact_details.insert(tk.END, "选择此联系人后，可以切换到\"导出记录\"标签页导出聊天记录。\n", "content")
@@ -1477,7 +1480,7 @@ class WeChatExportGUI:
                 start_date = self.start_date_entry.get_date()
                 start_time = f"{self.start_hour.get()}:{self.start_minute.get()}:{self.start_second.get()}"
                 start_time = f"{start_date.strftime('%Y-%m-%d')} {start_time}"
-                
+
                 end_date = self.end_date_entry.get_date()
                 end_time = f"{self.end_hour.get()}:{self.end_minute.get()}:{self.end_second.get()}"
                 end_time = f"{end_date.strftime('%Y-%m-%d')} {end_time}"
@@ -1573,7 +1576,7 @@ class WeChatExportGUI:
             # 检查数据库是否已经加载
             if not self.database:
                 return
-            
+
             # 获取头像数据
             avatar_buffer = None
             try:
@@ -1592,7 +1595,7 @@ class WeChatExportGUI:
                                 avatar_buffer = f.read()
             except Exception as e:
                 self.log_message(self.contacts_log, f"获取联系人头像时出错: {str(e)}")
-            
+
             # 如果获取到头像数据
             if avatar_buffer:
                 try:
@@ -1602,7 +1605,7 @@ class WeChatExportGUI:
                     img = img.resize((64, 64), Image.LANCZOS)
                     # 创建Tkinter兼容的图像
                     photo = ImageTk.PhotoImage(img)
-                    
+
                     # 更新头像显示
                     if hasattr(self, 'avatar_label') and self.avatar_label:
                         self.avatar_label.config(image=photo, text='')
@@ -1744,7 +1747,7 @@ class WeChatExportGUI:
         try:
             # 使用设置页面的解密版本值
             decrypt_version = getattr(self, 'decrypt_version', self.db_version).get()
-            
+
             if decrypt_version == 3:
                 self.log_message(self.decrypt_log, "解析微信3.x版本的数据库...")
                 version_list_path = './wxManager/decrypt/version_list.json'
@@ -1786,7 +1789,7 @@ class WeChatExportGUI:
 
                     self.log_message(self.decrypt_log, f"数据库解析成功，在{db_path}路径下")
                     self.db_dir.set(db_path)
-                    
+
                     # 保存解密历史记录
                     try:
                         import config
@@ -1796,7 +1799,7 @@ class WeChatExportGUI:
                         # 更新最近数据库列表
                         self.config = config.add_recent_database(self.config, db_path, 3)
                         config.save_config(self.config)
-                        
+
                         # 刷新历史记录列表
                         if hasattr(self, 'decrypt_history_listbox'):
                             self.decrypt_history_listbox.delete(0, tk.END)
@@ -1839,7 +1842,7 @@ class WeChatExportGUI:
 
                     self.log_message(self.decrypt_log, f"数据库解析成功，在{db_path}路径下")
                     self.db_dir.set(db_path)
-                    
+
                     # 保存解密历史记录
                     try:
                         import config
@@ -1849,7 +1852,7 @@ class WeChatExportGUI:
                         # 更新最近数据库列表
                         self.config = config.add_recent_database(self.config, db_path, 4)
                         config.save_config(self.config)
-                        
+
                         # 刷新历史记录列表
                         if hasattr(self, 'decrypt_history_listbox'):
                             self.decrypt_history_listbox.delete(0, tk.END)
@@ -1874,14 +1877,14 @@ class WeChatExportGUI:
         """保存当前配置"""
         try:
             import config
-            
+
             # 更新配置
             self.config["db_dir"] = self.db_dir.get()
             self.config["db_version"] = self.db_version.get()
             self.config["output_dir"] = self.output_dir.get()
             if hasattr(self, 'format_combobox') and self.format_combobox.get():
                 self.config["last_export_format"] = self.format_combobox.get()
-            
+
             # 保存配置
             config.save_config(self.config)
             self.log_message_console("配置已保存")
