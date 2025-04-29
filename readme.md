@@ -4,10 +4,10 @@
 
 ## 预览
 
-![设置界面预览](doc/images/GUI1.jpg)
+![设置界面预览](./doc/images/GUI1.jpg)
 *设置与数据库解密*
 
-![聊天记录导出预览](doc/images/GUI2.jpg)
+![聊天记录导出预览](./doc/images/GUI2.jpg)
 *联系人管理与聊天记录导出*
 
 
