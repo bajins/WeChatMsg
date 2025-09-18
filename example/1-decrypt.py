@@ -11,8 +11,8 @@
 
 import json
 import os
-
 import sys
+from wxManager.log import logger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -33,7 +33,7 @@ def dump_v3():
         version_list = json.loads(f.read())
     r_3 = get_info_v3(version_list)  # 微信3.x
     for wx_info in r_3:
-        print(wx_info)
+        logger.info(wx_info)
         me = Me()
         me.wx_dir = wx_info.wx_dir
         me.wxid = wx_info.wxid
@@ -42,14 +42,14 @@ def dump_v3():
         output_dir = wx_info.wxid
         key = wx_info.key
         if not key:
-            print('error! 未找到key，请重启微信后再试')
+            logger.info('error! 未找到key，请重启微信后再试')
             continue
         wx_dir = wx_info.wx_dir
         decrypt_v3.decrypt_db_files(key, src_dir=wx_dir, dest_dir=output_dir)
         # 导出的数据库在 output_dir/Msg 文件夹下，后面会用到
         with open(os.path.join(output_dir, 'Msg', 'info.json'), 'w', encoding='utf-8') as f:
             json.dump(info_data, f, ensure_ascii=False, indent=4)
-        print(f'数据库解析成功，在{os.path.join(output_dir, "Msg")}路径下')
+        logger.info(f'数据库解析成功，在{os.path.join(output_dir, "Msg")}路径下')
 
 
 def dump_v4():
@@ -58,7 +58,7 @@ def dump_v4():
     """
     r_4 = get_info_v4()  # 微信4.0
     for wx_info in r_4:
-        print(wx_info)
+        logger.info(wx_info)
         me = Me()
         me.wx_dir = wx_info.wx_dir
         me.wxid = wx_info.wxid
@@ -68,14 +68,14 @@ def dump_v4():
         output_dir = wx_info.wxid  # 数据库输出文件夹
         key = wx_info.key
         if not key:
-            print('error! 未找到key，请重启微信后再试')
+            logger.info('error! 未找到key，请重启微信后再试')
             continue
         wx_dir = wx_info.wx_dir
         decrypt_v4.decrypt_db_files(key, src_dir=wx_dir, dest_dir=output_dir)
         # 导出的数据库在 output_dir/db_storage 文件夹下，后面会用到
         with open(os.path.join(output_dir, 'db_storage', 'info.json'), 'w', encoding='utf-8') as f:
             json.dump(info_data, f, ensure_ascii=False, indent=4)
-        print(f'数据库解析成功，在{os.path.join(output_dir, "Msg")}路径下')
+        logger.info(f'数据库解析成功，在{os.path.join(output_dir, "Msg")}路径下')
 
 
 if __name__ == '__main__':

@@ -13,6 +13,7 @@ import pymem.process
 from wxManager.decrypt.wx_info_v4 import dump_wechat_info_v4
 from wxManager.decrypt import WeChatInfo
 from wxManager.decrypt.common import get_version
+from wxManager.log import logger
 
 ReadProcessMemory = ctypes.windll.kernel32.ReadProcessMemory
 void_p = ctypes.c_void_p
@@ -29,7 +30,7 @@ def get_exe_bit(file_path):
         with open(file_path, 'rb') as f:
             dos_header = f.read(2)
             if dos_header != b'MZ':
-                print('get exe bit error: Invalid PE file')
+                logger.info('get exe bit error: Invalid PE file')
                 return 64
             # Seek to the offset of the PE signature
             f.seek(60)
@@ -46,10 +47,10 @@ def get_exe_bit(file_path):
             elif machine == 0x8664:
                 return 64
             else:
-                print('get exe bit error: Unknown architecture: %s' % hex(machine))
+                logger.info('get exe bit error: Unknown architecture: %s' % hex(machine))
                 return 64
     except IOError:
-        print('get exe bit error: File not found or cannot be opened')
+        logger.info('get exe bit error: File not found or cannot be opened')
         return 64
 
 
@@ -75,7 +76,7 @@ def pattern_scan_all(handle, pattern, *, return_multiple=False, find_num=100):
                 return_multiple=return_multiple
             )
         except Exception as e:
-            print(e)
+            logger.info(e)
             break
         if not return_multiple and page_found:
             return page_found
@@ -138,7 +139,7 @@ def get_wx_dir(wxid):
                 if "%" in documents_paths[0]:
                     w_dir = os.environ.get(documents_paths[0].replace("%", ""))
                     w_dir = os.path.join(w_dir, os.path.join(*documents_paths[1:]))
-                    # print(1, w_dir)
+                    # logger.info(1, w_dir)
                 else:
                     w_dir = documents_path
             except Exception as e:
@@ -195,7 +196,7 @@ def get_key(db_path, addr_len):
     type3_addrs = pm.pattern_scan_module(phone_type3.encode(), module_name, return_multiple=True)
     type_addrs = type1_addrs if len(type1_addrs) >= 2 else type2_addrs if len(type2_addrs) >= 2 else type3_addrs if len(
         type3_addrs) >= 2 else "None"
-    # print(type_addrs)
+    # logger.info(type_addrs)
     if type_addrs == "None":
         return "None"
     for i in type_addrs[::-1]:
@@ -315,7 +316,7 @@ def get_info_v3(version_list):
 def get_info(version_list):
     result_v3 = read_info(version_list)  # 读取微信信息
     result_v4 = get_info_v4()
-    print(result_v3 + result_v4)
+    logger.info(result_v3 + result_v4)
     return result_v3 + result_v4
 
 
@@ -326,4 +327,4 @@ if __name__ == "__main__":
     with open(file_path, "r", encoding="utf-8") as f:
         version_list = json.loads(f.read())
     wx_info = get_info_v3(version_list)
-    print(wx_info)
+    logger.info(wx_info)

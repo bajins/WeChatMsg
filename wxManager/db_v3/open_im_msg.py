@@ -39,14 +39,14 @@ def convert_to_timestamp_(time_input) -> int:
             return int(dt_object.timestamp())
         except ValueError:
             # 如果转换失败，可能是其他格式的字符串，可以根据需要添加更多的处理逻辑
-            print("Error: Unsupported date format")
+            logger.info("Error: Unsupported date format")
             return -1
     elif isinstance(time_input, date):
         # 如果输入是datetime.date对象，将其转换为时间戳
         dt_object = datetime.combine(time_input, datetime.min.time())
         return int(dt_object.timestamp())
     else:
-        print("Error: Unsupported input type")
+        logger.info("Error: Unsupported input type")
         return -1
 
 
@@ -222,11 +222,11 @@ class OpenIMMsgDB(DataBaseBase):
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             # 获取列名
             increase_data(db_path, self.cursor, self.DB, 'ChatCRMsg', 'MsgSvrID', 1, exclude_column='localId')
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()

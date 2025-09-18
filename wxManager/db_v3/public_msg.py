@@ -12,6 +12,7 @@ from wxManager import MessageType
 from wxManager.merge import increase_data
 from wxManager.db_v3.msg import convert_to_timestamp,get_local_type
 from wxManager.model import DataBaseBase
+from wxManager.log import logger
 
 
 class PublicMsg(DataBaseBase):
@@ -129,13 +130,13 @@ class PublicMsg(DataBaseBase):
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             # 获取列名
             increase_data(db_path, self.cursor, self.DB, 'PublicMsg', 'MsgSvrID', 1, exclude_column='localId')
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()
 
 

@@ -1,9 +1,9 @@
 import json
 import random
 import os
-
 from wxManager import Me, MessageType
 from exporter.exporter import ExporterBase, remove_privacy_info, get_new_filename
+from wxManager.log import logger
 
 
 class JsonStrategy:
@@ -263,7 +263,7 @@ class JsonExporter(ExporterBase):
         return res
 
     def export(self):
-        print(f"【开始导出 json {self.contact.remark}】")
+        logger.info(f"【开始导出 json {self.contact.remark}】")
         origin_path = self.origin_path
         filename = os.path.join(origin_path, f"{self.contact.remark}.json")
         filename = get_new_filename(filename)
@@ -300,6 +300,6 @@ class JsonExporter(ExporterBase):
             random.shuffle(dataset)
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(dataset, f, ensure_ascii=False, indent=4)
-        print(f"【完成导出 json {self.contact.remark}】")
+        logger.info(f"【完成导出 json {self.contact.remark}】")
         self.update_progress_callback(1)
         self.finish_callback(self.exporter_id)

@@ -88,7 +88,7 @@ class DataBaseV4(DataBaseInterface):
 
     def init_database(self, db_dir=''):
         Me().load_from_json(os.path.join(db_dir, 'info.json'))  # 加载自己的信息
-        # print('初始化数据库', db_dir)
+        # logger.info('初始化数据库', db_dir)
         self.db_dir = db_dir
         flag = True
         flag &= self.contact_db.init_database(db_dir)
@@ -154,7 +154,7 @@ class DataBaseV4(DataBaseInterface):
             # # Step 2: Use multiprocessing to process the message batches
             # res = []
             # for batch in raw_message_batches:
-            #     print(len(batch))
+            #     logger.info(len(batch))
 
             with ProcessPoolExecutor(max_workers=min(len(raw_message_batches), 16)) as executor:
                 # Submit tasks
@@ -479,6 +479,6 @@ class DataBaseV4(DataBaseInterface):
                 db, path = futures[future]
                 try:
                     future.result()  # 这里会抛出异常（如果有的话）
-                    print(f"成功合并数据库: {path}")
+                    logger.info(f"成功合并数据库: {path}")
                 except Exception as e:
-                    print(f"合并 {path} 失败: {e}")
+                    logger.info(f"合并 {path} 失败: {e}")

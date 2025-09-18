@@ -69,7 +69,12 @@ class MicroMsg(DataBaseBase):
             cursor = self.DB.cursor()
             cursor.execute(sql)
             result = cursor.fetchall()
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            if 'no such table:' in e.args[0]:
+                cursor.execute("PRAGMA database_list;")
+                main_db = [row[2] for row in cursor.fetchall() if row[1] == 'main'][0]
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                logger.info(f"数据库{os.path.join(self.db_dir, main_db)}所有表：{cursor.fetchall()}")
             # lock.acquire(True)
             sql = '''SELECT UserName, Alias, Type, Remark, NickName, PYInitial, RemarkPYInitial, 
             ContactHeadImgUrl.smallHeadImgUrl, ContactHeadImgUrl.bigHeadImgUrl,ExTraBuf,"None" 
@@ -93,7 +98,12 @@ class MicroMsg(DataBaseBase):
             cursor = self.DB.cursor()
             cursor.execute(sql, [username])
             result1 = cursor.fetchone()
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            if 'no such table:' in e.args[0]:
+                cursor.execute("PRAGMA database_list;")
+                main_db = [row[2] for row in cursor.fetchall() if row[1] == 'main'][0]
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                logger.info(f"数据库{os.path.join(self.db_dir, main_db)}所有表：{cursor.fetchall()}")
             # 解决ContactLabel表不存在的问题
             # lock.acquire(True)
             sql = '''
@@ -177,7 +187,7 @@ class MicroMsg(DataBaseBase):
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             # 获取列名
@@ -188,7 +198,7 @@ class MicroMsg(DataBaseBase):
             increase_update_data(db_path, self.cursor, self.DB, 'ContactLabel', 'LabelId', 0)
             increase_update_data(db_path, self.cursor, self.DB, 'Session', 'strUsrName', 0)
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()
 
 
@@ -199,6 +209,6 @@ if __name__ == '__main__':
     contacts = msg.get_contact()
 
     sessions = msg.get_session()
-    print(sessions)
+    logger.info(sessions)
     for session in sessions:
-        print(session)
+        logger.info(session)

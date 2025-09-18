@@ -26,14 +26,14 @@ def convert_to_timestamp_(time_input) -> int:
             return int(dt_object.timestamp())
         except ValueError:
             # 如果转换失败，可能是其他格式的字符串，可以根据需要添加更多的处理逻辑
-            print("Error: Unsupported date format")
+            logger.info("Error: Unsupported date format")
             return -1
     elif isinstance(time_input, date):
         # 如果输入是datetime.date对象，将其转换为时间戳
         dt_object = datetime.combine(time_input, datetime.min.time())
         return int(dt_object.timestamp())
     else:
-        print("Error: Unsupported input type")
+        logger.info("Error: Unsupported input type")
         return -1
 
 
@@ -141,12 +141,17 @@ class Msg(DataBaseBase):
             {'AND CreateTime>' + str(start_time) + ' AND CreateTime<' + str(end_time) if time_range else ''}
             order by CreateTime
         '''
-        cursor.execute(sql, [username])
-        result = cursor.fetchall()
-        if result:
-            return result
-        else:
-            return []
+        result = []
+        try:
+            cursor.execute(sql, [username])
+            result = cursor.fetchall()
+        except sqlite3.OperationalError as e:
+            if 'no such table:' in e.args[0]:
+                cursor.execute("PRAGMA database_list;")
+                main_db = [row[2] for row in cursor.fetchall() if row[1] == 'main'][0]
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                logger.info(f"数据库{os.path.join(self.db_dir, main_db)}所有表：{cursor.fetchall()}")
+        return result
 
     def get_messages_by_username(self, username: str,
                                  time_range: Tuple[int | float | str | date, int | float | str | date] = None, ):
@@ -283,7 +288,7 @@ class Msg(DataBaseBase):
         for i in range(100):
             db_path = db_file_name.replace('0', f'{i}')
             if os.path.exists(db_path):
-                # print('初始化数据库：', db_path)
+                # logger.info('初始化数据库：', db_path)
                 file_name = os.path.basename(db_path)
                 if file_name in self.db_file_name:
                     index = self.db_file_name.index(file_name)
@@ -293,9 +298,9 @@ class Msg(DataBaseBase):
                     tasks.append([db_path, cursor, db])
                 else:
                     shutil.copy(db_path, os.path.join(self.db_dir, 'Multi', file_name))
-        # print(tasks)
+        # logger.info(tasks)
         # 使用线程池 (没有加快合并速度)
         # with ThreadPoolExecutor(max_workers=len(tasks)) as executor:
         #     executor.map(lambda args: task_(*args), tasks)
         self.commit()
-        print(len(tasks))
+        logger.info(len(tasks))

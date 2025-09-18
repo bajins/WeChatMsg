@@ -66,7 +66,7 @@ class ExporterBaseBase:
         self._is_paused = False
 
     def cancel(self):
-        print('cancel')
+        logger.info('cancel')
 
     def pause(self):
         self._is_paused = True
@@ -133,7 +133,7 @@ class ExporterBase(ExporterBaseBase):
 
     def print_progress(self, progress):
         logger.info(f'导出进度：{progress * 100:.2f}%')
-        # print()
+        # logger.info()
 
     def finish(self, success):
         if success:
@@ -413,7 +413,7 @@ class ContactExporter(ExporterBaseBase):
                          ]
                     )
         except PermissionError:
-            print('另一个程序正在使用此文件，无法访问。')
+            logger.info('另一个程序正在使用此文件，无法访问。')
 
 
 class GroupContactExporter(ExporterBaseBase):
@@ -453,7 +453,7 @@ class GroupContactExporter(ExporterBaseBase):
                         ]
                     )
         except PermissionError:
-            print('另一个程序正在使用此文件，无法访问。')
+            logger.info('另一个程序正在使用此文件，无法访问。')
 
 
 class CsvAllExporter(ExporterBaseBase):
@@ -492,7 +492,7 @@ def copy_file(source_file, destination_file):
             pass
             # logger.error(traceback.format_exc())
         finally:
-            print(f'复制:{destination_file}')
+            logger.info(f'复制:{destination_file}')
             # logger.info(f'复制:{destination_file}')
 
 
@@ -560,7 +560,7 @@ def decode_audio_to_mp3(media_buffer, output_dir, filename):
         # 调用系统上的 ffmpeg 可执行文件
         # 获取 FFmpeg 可执行文件的路径
         ffmpeg_path = get_ffmpeg_path()
-        # print(ffmpeg_path)
+        # logger.info(ffmpeg_path)
         # # 调用 FFmpeg
         if os.path.exists(ffmpeg_path):
             cmd = f'''"{ffmpeg_path}" -loglevel quiet -y -f s16le -i "{pcm_path}" -ar 44100 -ac 1 "{mp3_path}"'''
@@ -579,7 +579,7 @@ def decode_audio_to_mp3(media_buffer, output_dir, filename):
         # if os.path.exists(pcm_path):
         #     os.remove(pcm_path)
     except Exception as e:
-        print(f"Error: {e}")
+        logger.info(f"Error: {e}")
         logger.error(f'语音错误\n{traceback.format_exc()}')
         cmd = f'''"{os.path.join(os.getcwd(), 'app', 'resources', 'data', 'ffmpeg.exe')}" -loglevel quiet -y -f s16le -i "{pcm_path}" -ar 44100 -ac 1 "{mp3_path}"'''
         # system(cmd)

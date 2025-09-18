@@ -23,7 +23,12 @@ class OpenIMContactDB(DataBaseBase):
             cursor.execute(sql)
             result = cursor.fetchall()
             self.commit()  # 提交更改
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            if 'no such table:' in e.args[0]:
+                cursor.execute("PRAGMA database_list;")
+                main_db = [row[2] for row in cursor.fetchall() if row[1] == 'main'][0]
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                logger.info(f"数据库{os.path.join(self.db_dir, main_db)}所有表：{cursor.fetchall()}")
             logger.error(f'数据库错误:\n{traceback.format_exc()}')
         res = []
         if result:
@@ -59,7 +64,12 @@ class OpenIMContactDB(DataBaseBase):
             cursor.execute(sql, [username_])
             result = cursor.fetchone()
             self.commit()  # 提交更改
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            if 'no such table:' in e.args[0]:
+                cursor.execute("PRAGMA database_list;")
+                main_db = [row[2] for row in cursor.fetchall() if row[1] == 'main'][0]
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                logger.info(f"数据库{os.path.join(self.db_dir, main_db)}所有表：{cursor.fetchall()}")
             logger.error(f'数据库错误:\n{traceback.format_exc()}')
         if result:
             result = list(result)
@@ -81,7 +91,6 @@ class OpenIMContactDB(DataBaseBase):
                 UpdateTime 更新时间
         """
         result = []
-        return result
         if not self.open_flag:
             return result
         try:
@@ -93,17 +102,22 @@ class OpenIMContactDB(DataBaseBase):
             cursor.execute(sql, [wording_id])
             result = cursor.fetchone()
             self.commit()  # 提交更改
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            if 'no such table:' in e.args[0]:
+                cursor.execute("PRAGMA database_list;")
+                main_db = [row[2] for row in cursor.fetchall() if row[1] == 'main'][0]
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                logger.info(f"数据库{os.path.join(self.db_dir, main_db)}所有表：{cursor.fetchall()}")
             logger.error(f'数据库错误:\n{traceback.format_exc()}')
         return result
 
 
     def increase_source(self, db_path_):
         if not (os.path.exists(db_path_) or os.path.isfile(db_path_)):
-            print(f'{db_path_} 不存在')
+            logger.info(f'{db_path_} 不存在')
             return
         if not self.sourceDB or not self.sourceCursor:
-            print(f'企业微信数据异常，尝试修复···')
+            logger.info(f'企业微信数据异常，尝试修复···')
             try:
                 os.remove(open_im_source_db_path)
             except:
@@ -118,20 +132,20 @@ class OpenIMContactDB(DataBaseBase):
             # 获取列名
             increase_update_data(db_path_, self.sourceCursor, self.sourceDB, 'OpenIMWordingInfo', 'WordingId', 2)
         except sqlite3.Error as e:
-            print(f"数据库操作错误: {e}")
+            logger.info(f"数据库操作错误: {e}")
             self.sourceDB.rollback()
         finally:
             lock.release()
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             # 获取列名
             increase_update_data(db_path, self.cursor, self.DB, 'OpenIMContact', 'UserName', 0)
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()
 
 
@@ -141,4 +155,4 @@ if __name__ == '__main__':
     msg.init_database()
     contacts = msg.get_contacts()
     for contact in contacts:
-        print(contact)
+        logger.info(contact)

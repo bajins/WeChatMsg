@@ -32,10 +32,10 @@ def increase_data(db_path, src_cursor, src_conn, table_name, col_name, col_index
     @return:
     """
     if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-        print(f'{db_path} 不存在')
+        logger.info(f'{db_path} 不存在')
         return
     if not src_cursor or not src_conn:
-        print(f'{db_path} 数据库连接无效，增量解析失败')
+        logger.info(f'{db_path} 数据库连接无效，增量解析失败')
         return
     tgt_conn = sqlite3.connect(db_path)
     tgt_cur = tgt_conn.cursor()
@@ -46,13 +46,13 @@ def increase_data(db_path, src_cursor, src_conn, table_name, col_name, col_index
             create_table_sql = get_create_statements(tgt_conn, table_name, "table")
             if create_table_sql:
                 src_conn.execute(create_table_sql[0])  # 执行 CREATE TABLE 语句
-                print(f"表 {table_name} 结构已复制")
+                logger.info(f"表 {table_name} 结构已复制")
 
             # 复制索引
             create_index_sql_list = get_create_statements(tgt_conn, table_name, "index")
             for create_index_sql in create_index_sql_list:
                 src_conn.execute(create_index_sql)  # 执行 CREATE INDEX 语句
-                print(f"索引已复制: {create_index_sql}")
+                logger.info(f"索引已复制: {create_index_sql}")
         # 获取列名
         src_cursor.execute(f"PRAGMA table_info({table_name})")
         columns_info = src_cursor.fetchall()
@@ -61,7 +61,7 @@ def increase_data(db_path, src_cursor, src_conn, table_name, col_name, col_index
             try:
                 exclude_col_index = column_names.index(exclude_column)
             except ValueError:
-                print(f"错误: 列 {exclude_column} 在表 {table_name} 中不存在")
+                logger.info(f"错误: 列 {exclude_column} 在表 {table_name} 中不存在")
                 return
             column_names = column_names[:exclude_col_index]+column_names[exclude_col_index+1:]
         num_columns = len(column_names)
@@ -69,7 +69,7 @@ def increase_data(db_path, src_cursor, src_conn, table_name, col_name, col_index
             try:
                 col_index = column_names.index(col_name)
             except ValueError:
-                print(f"错误: 列 {col_name} 在表 {table_name} 中不存在")
+                logger.info(f"错误: 列 {col_name} 在表 {table_name} 中不存在")
                 return
         # 从数据库B中选择主键不在数据库A中的行
         query = f"""
@@ -94,12 +94,12 @@ def increase_data(db_path, src_cursor, src_conn, table_name, col_name, col_index
             """
             src_cursor.executemany(insert_query, rows_to_insert)
             src_conn.commit()
-            print(f"{len(rows_to_insert)} 行已插入到 {table_name} 表中")
+            logger.info(f"{len(rows_to_insert)} 行已插入到 {table_name} 表中")
         else:
             pass
-            # print(f"没有需要插入的数据，{table_name} 表已是最新")
+            # logger.info(f"没有需要插入的数据，{table_name} 表已是最新")
     except sqlite3.Error as e:
-        print(f"{db_path} 数据库操作错误: {e}")
+        logger.info(f"{db_path} 数据库操作错误: {e}")
     finally:
         tgt_cur.close()
         tgt_conn.close()
@@ -117,7 +117,7 @@ def increase_update_data(db_path, src_cur, src_conn, table_name, col_name, col_i
     :param exclude_first_column: 是否排除第一列
     """
     if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-        print(f'{db_path} 不存在')
+        logger.info(f'{db_path} 不存在')
         return
 
     tgt_conn = sqlite3.connect(db_path)
@@ -128,13 +128,13 @@ def increase_update_data(db_path, src_cur, src_conn, table_name, col_name, col_i
             create_table_sql = get_create_statements(src_conn, table_name, "table")
             if create_table_sql:
                 tgt_conn.execute(create_table_sql[0])  # 执行 CREATE TABLE 语句
-                print(f"表 {table_name} 结构已复制")
+                logger.info(f"表 {table_name} 结构已复制")
 
             # 复制索引
             create_index_sql_list = get_create_statements(src_conn, table_name, "index")
             for create_index_sql in create_index_sql_list:
                 tgt_conn.execute(create_index_sql)  # 执行 CREATE INDEX 语句
-                print(f"索引已复制: {create_index_sql}")
+                logger.info(f"索引已复制: {create_index_sql}")
 
         # 获取列名
         src_cur.execute(f"PRAGMA table_info({table_name})")
@@ -149,7 +149,7 @@ def increase_update_data(db_path, src_cur, src_conn, table_name, col_name, col_i
             try:
                 col_index = column_names.index(col_name)
             except ValueError:
-                print(f"错误: 列 {col_name} 在 {table_name} 表中不存在。")
+                logger.info(f"错误: 列 {col_name} 在 {table_name} 表中不存在。")
                 return
 
         # 查询目标数据库的数据
@@ -172,12 +172,12 @@ def increase_update_data(db_path, src_cur, src_conn, table_name, col_name, col_i
             insert_query = f"INSERT INTO {table_name} ({', '.join(column_names)}) VALUES ({', '.join(['?'] * num_columns)})"
             src_cur.executemany(insert_query, rows_to_insert)
             src_conn.commit()
-            print(f"{len(rows_to_insert)} 行已更新到 {table_name} 表中。")
+            logger.info(f"{len(rows_to_insert)} 行已更新到 {table_name} 表中。")
         else:
             pass
-            # print(f"没有需要插入的数据，{table_name} 表已是最新。")
+            # logger.info(f"没有需要插入的数据，{table_name} 表已是最新。")
     except sqlite3.Error as e:
-        print(f"{db_path} 数据库操作错误: {e}")
+        logger.info(f"{db_path} 数据库操作错误: {e}")
     finally:
         tgt_cur.close()
         tgt_conn.close()

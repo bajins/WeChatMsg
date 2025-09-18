@@ -202,11 +202,11 @@ if __name__ == "__main__":
     
     # 检查服务是否可用
     if client.health_check():
-        print("服务正常运行")
+        logger.info("服务正常运行")
         
         # 获取可用模板
         templates = client.get_templates()
-        print(f"可用模板: {templates}")
+        logger.info(f"可用模板: {templates}")
         
         # 生成报告示例
         chat_content = """
@@ -226,15 +226,15 @@ if __name__ == "__main__":
         )
         
         if result.get("success"):
-            print(f"报告生成成功: {result}")
+            logger.info(f"报告生成成功: {result}")
             
             # 如果生成了图片，保存到本地
             if result.get("png_file_path"):
                 image_filename = os.path.basename(result["png_file_path"])
                 saved = client.save_image(image_filename, f"./output/{image_filename}")
                 if saved:
-                    print(f"图片已保存到 ./output/{image_filename}")
+                    logger.info(f"图片已保存到 ./output/{image_filename}")
         else:
-            print(f"报告生成失败: {result}")
+            logger.info(f"报告生成失败: {result}")
     else:
-        print("服务不可用，请检查API服务是否启动")
+        logger.info("服务不可用，请检查API服务是否启动")

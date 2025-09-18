@@ -36,7 +36,7 @@ def get_md5_from_xml(content, type_="img"):
             md5_value = root.find(".//videomsg").get("md5")
         else:
             md5_value = None
-        # print(md5_value)
+        # logger.info(md5_value)
         return md5_value
     except ET.ParseError:
         logger.error(traceback.format_exc())
@@ -61,7 +61,12 @@ class HardLinkVideo(DataBaseBase):
         cursor = self.DB.cursor()
         try:
             cursor.execute(sql, [md5])
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            if 'no such table:' in e.args[0]:
+                cursor.execute("PRAGMA database_list;")
+                main_db = [row[2] for row in cursor.fetchall() if row[1] == 'main'][0]
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                logger.info(f"数据库{os.path.join(self.db_dir, main_db)}所有表：{cursor.fetchall()}")
             return None
         result = cursor.fetchone()
         return result
@@ -104,14 +109,14 @@ class HardLinkVideo(DataBaseBase):
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             # 获取列名
             increase_data(db_path, self.cursor, self.DB, 'HardLinkVideoAttribute', 'Md5Hash', 0)
             increase_data(db_path, self.cursor, self.DB, 'HardLinkVideoID', 'DirId', 0)
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()
 
 

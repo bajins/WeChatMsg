@@ -13,6 +13,7 @@ import traceback
 
 from wxManager.merge import increase_data
 from wxManager.model import DataBaseBase
+from wxManager.log import logger
 
 
 class EmotionDB(DataBaseBase):
@@ -39,7 +40,7 @@ class EmotionDB(DataBaseBase):
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             # 获取列名
@@ -48,7 +49,7 @@ class EmotionDB(DataBaseBase):
             increase_data(db_path, self.cursor, self.DB, 'kStoreEmoticonFilesTable', 'md5_')
             increase_data(db_path, self.cursor, self.DB, 'kStoreEmoticonPackageTable', 'package_id_')
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()
 
 

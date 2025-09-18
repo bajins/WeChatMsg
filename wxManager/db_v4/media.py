@@ -89,7 +89,7 @@ class MediaDB(DataBaseBase):
             if os.path.exists(pcm_path):
                 os.remove(pcm_path)
         except Exception as e:
-            print(f"Error: {e}")
+            logger.info(f"Error: {e}")
             logger.error(f'语音错误\n{traceback.format_exc()}')
             cmd = f'''"{os.path.join(os.getcwd(), 'app', 'resources', 'data', 'ffmpeg.exe')}" -loglevel quiet -y -f s16le -i "{pcm_path}" -ar 44100 -ac 1 "{mp3_path}"'''
             # system(cmd)
@@ -101,7 +101,7 @@ class MediaDB(DataBaseBase):
     def merge(self, db_path):
         # todo 判断数据库对应情况
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         if not self.DB:
             shutil.copy(db_path,os.path.join(self.db_dir,self.db_file_name))
@@ -114,7 +114,7 @@ class MediaDB(DataBaseBase):
                     increase_data(db_path, cursor, db, 'Name2Id', 'user_name')
                     increase_update_data(db_path, cursor, db, 'Timestamp', 'timestamp')
                 except:
-                    print(f"数据库操作错误: {traceback.format_exc()}")
+                    logger.info(f"数据库操作错误: {traceback.format_exc()}")
                     db.rollback()
 
 

@@ -10,8 +10,8 @@
 """
 import time
 import os
-
 import sys
+from wxManager.log import logger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -27,21 +27,21 @@ st = time.time()
 cnt = 0
 contacts = database.get_contacts()
 for contact in contacts:
-    print(contact)
+    logger.info(contact)
     if "韩镱键" in contact.nickname:
         input()
     contact.small_head_img_blog = database.get_avatar_buffer(contact.wxid)
     cnt += 1
     if contact.is_chatroom:
-        print('*' * 80)
-        print(contact)
+        logger.info('*' * 80)
+        logger.info(contact)
         chatroom_members = database.get_chatroom_members(contact.wxid)
-        print(contact.wxid, '群成员个数：', len(chatroom_members))
+        logger.info(contact.wxid, '群成员个数：', len(chatroom_members))
         for wxid, chatroom_member in chatroom_members.items():
             chatroom_member.small_head_img_blog = database.get_avatar_buffer(wxid)
-            print(chatroom_member)
+            logger.info(chatroom_member)
             cnt += 1
 
 et = time.time()
 
-print(f'联系人个数：{cnt} 耗时：{et - st:.2f}s')
+logger.info(f'联系人个数：{cnt} 耗时：{et - st:.2f}s')

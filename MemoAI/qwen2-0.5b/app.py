@@ -5,6 +5,7 @@ import threading
 import subprocess
 import gradio as gr
 from typing import List, Optional, Tuple, Dict
+from wxManager.log import logger
 
 
 os.system("pip uninstall -y tensorflow tensorflow-estimator tensorflow-io-gcs-filesystem")
@@ -21,7 +22,7 @@ config_file = "di_config.json"
 config = ConfigManager.get_config_from_json(config_file)
 
 def download_model(model_id, revision, source="modelscope"):
-    print(f"Downloading model {model_id} (revision: {revision}) from {source}")
+    logger.info(f"Downloading model {model_id} (revision: {revision}) from {source}")
     if source == "modelscope":
         from modelscope import snapshot_download
         model_dir = snapshot_download(model_id, revision=revision)
@@ -31,7 +32,7 @@ def download_model(model_id, revision, source="modelscope"):
     else:
         raise ValueError("Unknown source")
 
-    print(f"Save model to path {model_dir}")
+    logger.info(f"Save model to path {model_dir}")
 
     return model_dir
 
@@ -146,7 +147,7 @@ def model_chat(query: Optional[str], history: Optional[History],
     json_str = engine_helper.convert_request_to_jsonstr(request)
     log_lock.acquire()
     try:
-        print(f"{json_str}\n")
+        logger.info(f"{json_str}\n")
     finally:
         log_lock.release()
 

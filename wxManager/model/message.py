@@ -11,8 +11,8 @@
 from dataclasses import dataclass
 from typing import List
 from datetime import datetime
-
 import xmltodict
+from wxManager.log import logger
 
 
 class MessageType:
@@ -121,7 +121,7 @@ class Message:
         try:
             return f'{self.type}\n{xmltodict.parse(self.xml_content)}'
         except:
-            print(self.xml_content)
+            logger.info(self.xml_content)
             return f'{self.type}\n{self.xml_content}'
 
     def __lt__(self, other):
@@ -650,4 +650,4 @@ if __name__ == '__main__':
         status=3,
         content="Hello, world!"
     )
-    print(msg.status)  # 输出：3
+    logger.info(msg.status)  # 输出：3

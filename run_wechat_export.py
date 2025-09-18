@@ -89,7 +89,7 @@ def main():
             messagebox.showerror("启动错误", error_msg)
         except Exception:
             # 如果连错误对话框都无法显示，打印到控制台
-            print(error_msg)
+            logger.info(error_msg)
         
         # 返回错误代码
         return 1

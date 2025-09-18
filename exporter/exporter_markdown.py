@@ -1,9 +1,9 @@
 import os
 import re
-
 from exporter.exporter import ExporterBase
 from wxManager import MessageType, Message
 from wxManager.model import QuoteMessage, LinkMessage
+from wxManager.log import logger
 
 
 def parser_date(str_date):
@@ -137,7 +137,7 @@ class MarkdownExporter(ExporterBase):
 
     def export(self):
         # 实现导出为txt的逻辑
-        print(f"【开始导出 Markdown {self.contact.remark}】")
+        logger.info(f"【开始导出 Markdown {self.contact.remark}】")
         origin_path = self.origin_path
         os.makedirs(origin_path, exist_ok=True)
         filename = os.path.join(origin_path, self.contact.remark + '.md')
@@ -206,5 +206,5 @@ class MarkdownExporter(ExporterBase):
                 elif type_ == MessageType.Position:
                     self.position(f, message)
         self.update_progress_callback(1)
-        print(f"【完成导出 Markdown {self.contact.remark}】")
+        logger.info(f"【完成导出 Markdown {self.contact.remark}】")
         self.finish_callback(self.exporter_id)

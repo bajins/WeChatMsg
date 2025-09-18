@@ -1,5 +1,6 @@
 import json
 import os
+from wxManager.log import logger
 
 data_dir = r'E:\Project\Python\MemoTrace\data\聊天记录'
 
@@ -9,7 +10,7 @@ train_res = []
 for filepath, dirnames, filenames in os.walk(data_dir):
     for filename in filenames:
         if filename.endswith('.json'):
-            print(filename, filepath)
+            logger.info(filename, filepath)
             filepath_ = os.path.join(filepath, filename)
             with open(filepath_, 'r', encoding='utf-8') as f:
                 data = json.load(f)

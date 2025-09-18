@@ -24,7 +24,7 @@ icon_files = {
 class HtmlExporter(ExporterBase):
 
     def export(self):
-        print(f"【开始导出 HTML {self.contact.remark}】")
+        logger.info(f"【开始导出 HTML {self.contact.remark}】")
         f_name = '.html'
         filename = os.path.join(self.origin_path, f'{self.contact.remark}{f_name}')
         filename = get_new_filename(filename)
@@ -231,18 +231,18 @@ class HtmlExporter(ExporterBase):
                 server_id_Page[str(server_id)] = curpage
                 server_id_Idx[str(server_id)] = select_msg_cnt - 1
 
-        # print(image_tasks)
-        # print(file_tasks)
-        # print(video_tasks)
-        # print(audio_tasks)
+        # logger.info(image_tasks)
+        # logger.info(file_tasks)
+        # logger.info(video_tasks)
+        # logger.info(audio_tasks)
         logger.info('解析图片')
         # 使用多进程，导出所有图片
         batch_decode_image_multiprocessing(Me().xor_key, image_tasks)
-        print('开始复制文件')
+        logger.info('开始复制文件')
         logger.info(f'开始复制{len(video_tasks + file_tasks)}')
         # 使用多线程，复制文件、视频到导出文件夹
         copy_files(video_tasks + file_tasks)
-        print('开始导出语音')
+        logger.info('开始导出语音')
         logger.info('开始导出语音')
         decode_audios(audio_tasks)
 
@@ -275,7 +275,7 @@ class HtmlExporter(ExporterBase):
                     dic[key] = dict_to_js(value)
             return dic
 
-        print('开始字符串转义')
+        logger.info('开始字符串转义')
         logger.info('开始字符串转义')
         # 字符串转义，防止JS出现语法错误
         html_data = []
@@ -293,5 +293,5 @@ class HtmlExporter(ExporterBase):
             json.dump(html_json, f, ensure_ascii=False, indent=4)
 
         self.update_progress_callback(1)
-        print(f"【完成导出 HTML {self.contact.remark}】{len(messages)}")
+        logger.info(f"【完成导出 HTML {self.contact.remark}】{len(messages)}")
         self.finish_callback(self.exporter_id)

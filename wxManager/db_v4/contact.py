@@ -13,6 +13,7 @@ import traceback
 
 from wxManager.merge import increase_update_data, increase_data
 from wxManager.model.db_model import DataBaseBase
+from wxManager.log import logger
 
 
 class ContactDB(DataBaseBase):
@@ -130,7 +131,7 @@ where username=?
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             # 获取列名
@@ -144,7 +145,7 @@ where username=?
             # increase_update_data(db_path, self.cursor, self.DB, 'chat_room_member', 'room_id_')
             increase_data(db_path, self.cursor, self.DB, 'name2id', 'username')
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()
 
 

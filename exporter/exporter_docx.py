@@ -108,7 +108,7 @@ class DocxExporter(ExporterBase):
                     run.add_picture(image_path, height=shared.Inches(2), width=shared.Inches(2))
                     doc.add_paragraph()
                 except:
-                    print("Error!image")
+                    logger.info("Error!image")
                     logger.error(image_path)
                     logger.error(traceback.format_exc())
         else:
@@ -272,7 +272,7 @@ class DocxExporter(ExporterBase):
         return content_cell
 
     def export(self):
-        print(f"【开始导出 DOCX {self.contact.remark}】")
+        logger.info(f"【开始导出 DOCX {self.contact.remark}】")
         origin_path = self.origin_path
         messages = self.database.get_messages(self.contact.wxid, time_range=self.time_range)
         total_steps = len(messages)
@@ -333,5 +333,5 @@ class DocxExporter(ExporterBase):
                     pass
                 newdoc()
         self.update_progress_callback(1)
-        print(f"【完成导出 DOCX {self.contact.remark}】")
+        logger.info(f"【完成导出 DOCX {self.contact.remark}】")
         self.finish_callback(self.exporter_id)

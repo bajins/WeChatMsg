@@ -37,7 +37,7 @@ def get_md5_from_xml(content, type_="img"):
             md5_value = root.find(".//videomsg").get("md5")
         else:
             md5_value = None
-        # print(md5_value)
+        # logger.info(md5_value)
         return md5_value
     except:
         logger.error(traceback.format_exc())
@@ -142,14 +142,14 @@ class HardLinkImage(DataBaseBase):
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             # 获取列名
             increase_data(db_path, self.cursor, self.DB, 'HardLinkImageAttribute', 'Md5Hash', 0)
             increase_data(db_path, self.cursor, self.DB, 'HardLinkImageID', 'DirId', 0)
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()
 
 

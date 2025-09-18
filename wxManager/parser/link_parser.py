@@ -160,7 +160,7 @@ def parser_music(xml_content):
         }
     except Exception as e:
         logger.error(f'音乐分享解析失败\n{traceback.format_exc()}')
-        print(f"Music Share Error: {e}")
+        logger.info(f"Music Share Error: {e}")
         return {"type": 3, "title": "发生错误", "is_error": True}
 
 

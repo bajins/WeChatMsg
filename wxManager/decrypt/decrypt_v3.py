@@ -93,7 +93,7 @@ def decode_wrapper(tasks):
 
 def decrypt_db_files(key, src_dir: str, dest_dir: str):
     if not os.path.exists(src_dir):
-        print(f"源文件夹 {src_dir} 不存在")
+        logger.info(f"源文件夹 {src_dir} 不存在")
         return
 
     if not os.path.exists(dest_dir):
@@ -113,7 +113,7 @@ def decrypt_db_files(key, src_dir: str, dest_dir: str):
                 # 确保目标子文件夹存在
                 if not os.path.exists(dest_sub_dir):
                     os.makedirs(dest_sub_dir)
-                print(dest_file_path)
+                logger.info(dest_file_path)
                 decrypt_tasks.append((key, src_file_path, dest_file_path))
                 # decrypt_db_file_v3(key, src_file_path, dest_file_path)
     with ProcessPoolExecutor(max_workers=16) as executor:

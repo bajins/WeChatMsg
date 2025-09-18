@@ -11,6 +11,7 @@
 import os
 import sqlite3
 import traceback
+from wxManager.log import logger
 
 
 class DataBaseBase:
@@ -39,18 +40,21 @@ class DataBaseBase:
                 db_path = os.path.join(db_dir, new_file_name)
                 if os.path.exists(db_path):
                     self.db_file_name.append(os.path.basename(new_file_name))
-                    # print('初始化数据库：', db_path)
+                    # logger.info('初始化数据库：', db_path)
                     DB = sqlite3.connect(db_path, check_same_thread=False)
                     cursor = DB.cursor()
                     self.DB.append(DB)
                     self.cursor.append(cursor)
                     self.open_flag = True
+
+                    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                    logger.info(f"数据库{db_path}初始化完成，所有表：{cursor.fetchall()}")
         else:
             self.DB = sqlite3.connect(db_path, check_same_thread=False)
             # '''创建游标'''
             self.cursor = self.DB.cursor()
             self.open_flag = True
-        # print('初始化数据库完成：', db_path)
+        # logger.info('初始化数据库完成：', db_path)
         self.self_init()
         return True
 
@@ -78,7 +82,7 @@ class DataBaseBase:
                     if self.DB:
                         self.DB.close()
             except:
-                print(traceback.format_exc())
+                logger.info(traceback.format_exc())
             finally:
                 pass
 

@@ -21,6 +21,7 @@ from typing import Tuple
 from wxManager import MessageType
 from wxManager.merge import increase_data, increase_update_data
 from wxManager.model.db_model import DataBaseBase
+from wxManager.log import logger
 
 
 def convert_to_timestamp_(time_input) -> int:
@@ -34,14 +35,14 @@ def convert_to_timestamp_(time_input) -> int:
             return int(dt_object.timestamp())
         except ValueError:
             # 如果转换失败，可能是其他格式的字符串，可以根据需要添加更多的处理逻辑
-            print("Error: Unsupported date format")
+            logger.info("Error: Unsupported date format")
             return -1
     elif isinstance(time_input, date):
         # 如果输入是datetime.date对象，将其转换为时间戳
         dt_object = datetime.combine(time_input, datetime.min.time())
         return int(dt_object.timestamp())
     else:
-        print("Error: Unsupported input type")
+        logger.info("Error: Unsupported input type")
         return -1
 
 
@@ -287,7 +288,7 @@ order by sort_seq
             result = tgt_cur.fetchall()
             tgt_cur.close()
             tgt_conn.close()
-            # print(result)
+            # logger.info(result)
             if result:
                 for row in result:
                     table_name = row[0]
@@ -298,7 +299,7 @@ order by sort_seq
         for i in range(100):
             db_path = db_file_name.replace('0', f'{i}')
             if os.path.exists(db_path):
-                # print('初始化数据库：', db_path)
+                # logger.info('初始化数据库：', db_path)
                 file_name = os.path.basename(db_path)
                 if file_name in self.db_file_name:
                     index = self.db_file_name.index(file_name)
@@ -308,9 +309,9 @@ order by sort_seq
                     tasks.append([db_path, cursor, db])
                 else:
                     shutil.copy(db_path, os.path.join(self.db_dir, 'message'))
-        # print(tasks)
+        # logger.info(tasks)
         # 使用线程池 (没有加快合并速度)
         # with ThreadPoolExecutor(max_workers=len(tasks)) as executor:
         #     executor.map(lambda args: task_(*args), tasks)
         self.commit()
-        print(len(tasks))
+        logger.info(len(tasks))

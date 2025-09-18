@@ -11,8 +11,8 @@
 
 import time
 import os
-
 import sys
+from wxManager.log import logger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from multiprocessing import freeze_support
@@ -47,7 +47,7 @@ def export():
 
     exporter.start()
     et = time.time()
-    print(f'耗时：{et - st:.2f}s')
+    logger.info(f'耗时：{et - st:.2f}s')
 
 
 def batch_export():
@@ -78,7 +78,7 @@ def batch_export():
 
         exporter.start()
     et = time.time()
-    print(f'耗时：{et - st:.2f}s')
+    logger.info(f'耗时：{et - st:.2f}s')
 
 
 def batch_export_by_fmt():
@@ -119,7 +119,7 @@ def batch_export_by_fmt():
 
         execute.start()
     et = time.time()
-    print(f'耗时：{et - st:.2f}s')
+    logger.info(f'耗时：{et - st:.2f}s')
 
 
 if __name__ == '__main__':

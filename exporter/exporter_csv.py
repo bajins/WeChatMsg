@@ -1,9 +1,9 @@
 import csv
 import os
-
 from wxManager import Message
 from wxManager.model import Me
 from exporter.exporter import ExporterBase, get_new_filename
+from wxManager.log import logger
 
 
 class CSVExporter(ExporterBase):
@@ -24,7 +24,7 @@ class CSVExporter(ExporterBase):
         return res
 
     def export(self):
-        print(f"【开始导出 CSV {self.contact.remark}】")
+        logger.info(f"【开始导出 CSV {self.contact.remark}】")
         os.makedirs(self.origin_path, exist_ok=True)
         filename = os.path.join(self.origin_path,f"{self.contact.remark}.csv")
         filename = get_new_filename(filename)
@@ -46,4 +46,4 @@ class CSVExporter(ExporterBase):
             writer.writerows(csv_res)
         self.update_progress_callback(1)
         self.finish_callback(self.exporter_id)
-        print(f"【完成导出 CSV {self.contact.remark}】")
+        logger.info(f"【完成导出 CSV {self.contact.remark}】")

@@ -14,8 +14,8 @@ from typing import List, Tuple
 from concurrent.futures import ProcessPoolExecutor
 from aiofiles import open as aio_open
 from aiofiles.os import makedirs
-
 from Crypto.Cipher import AES
+from wxManager.log import logger
 
 # 图片字节头信息，
 # [0][1]为jpg头信息，
@@ -59,7 +59,7 @@ def get_code(dat_read):
             if idf_code == pic_head[head_index]:
                 return head_index, code
             head_index = head_index + 1
-        print("not jpg, png, gif")
+        logger.info("not jpg, png, gif")
         return -1, -1
     except:
         return -1, -1
@@ -79,7 +79,7 @@ def decode_dat(xor_key: int, file_path, out_path, dst_name='') -> str | bytes:
         os.makedirs(out_path, exist_ok=True)
     if not os.path.isdir(out_path):
         return ''
-    # print(file_path,out_path,dst_name)
+    # logger.info(file_path,out_path,dst_name)
     with open(file_path, 'rb') as file_in:
         header = file_in.read(0xf)
     if is_v4_image(header):
@@ -116,7 +116,7 @@ def decode_dat(xor_key: int, file_path, out_path, dst_name='') -> str | bytes:
                     break
                 file_out.write(bytes([byte ^ decode_code for byte in header]))
 
-    # print(os.path.basename(file_outpath))
+    # logger.info(os.path.basename(file_outpath))
     return file_outpath
 
 
@@ -149,7 +149,7 @@ def get_decode_code_v4(wx_dir):
                         # 推导出密钥
                         xor_key = [c ^ p for c, p in zip(file_tail, jpg_known_tail)]
                         if len(set(xor_key)) == 1:
-                            print(f'[*] 找到异或密钥: 0x{xor_key[0]:x}')
+                            logger.info(f'[*] 找到异或密钥: 0x{xor_key[0]:x}')
                             return xor_key[0]
         return -1
 
@@ -241,7 +241,7 @@ def decode_dat_v4(xor_key: int, file_path, out_path, dst_name='') -> str | bytes
         f.write(res_data[0:-0x100000])
         f.write(bytes([byte ^ xor_key for byte in res_data[-0x100000:]]))
 
-    # print(f"解密完成，已保存到: {output_file}")
+    # logger.info(f"解密完成，已保存到: {output_file}")
     return output_file
 
 
@@ -294,7 +294,7 @@ async def decode_dat_v4_async(xor_key: int, file_path, out_path, dst_name='') ->
         await f.write(res_data[:-0x100000])
         await f.write(bytes([byte ^ xor_key for byte in res_data[-0x100000:]]))
 
-    print(f"解密完成，已保存到: {output_file}")
+    logger.info(f"解密完成，已保存到: {output_file}")
     return output_file
 
 
@@ -327,7 +327,7 @@ def batch_decode_image_multiprocessing(xor_key, file_infos: List[Tuple[str, str,
 
     with ProcessPoolExecutor(max_workers=10) as executor:
         tasks = [(xor_key, file_path, out_path, file_name) for file_path, out_path, file_name in file_infos]
-        # print(len(split_list(tasks, 10)), '总任务数', len(file_infos))
+        # logger.info(len(split_list(tasks, 10)), '总任务数', len(file_infos))
         results = list(executor.map(decode_wrapper, tasks, chunksize=200))  # 使用顶层定义的函数
     return results
 

@@ -77,7 +77,7 @@ class MediaMsg(DataBaseBase):
             if os.path.exists(pcm_path):
                 os.remove(pcm_path)
         except Exception as e:
-            print(f"Error: {e}")
+            logger.info(f"Error: {e}")
             logger.error(f'语音发送错误\n{traceback.format_exc()}')
             cmd = f'''"{os.path.join(os.getcwd(), 'app', 'resources', 'data', 'ffmpeg.exe')}" -loglevel quiet -y -f s16le -i "{pcm_path}" -ar 44100 -ac 1 "{mp3_path}"'''
             # system(cmd)
@@ -138,7 +138,7 @@ class MediaMsg(DataBaseBase):
                 if result_dict['err_no'] == 0:
                     return result_dict['result']
                 else:
-                    print(result_dict)
+                    logger.info(result_dict)
                     return ""
             else:
                 return ""
@@ -157,7 +157,7 @@ class MediaMsg(DataBaseBase):
         for i in range(100):
             db_path = db_file_name.replace('0', f'{i}')
             if os.path.exists(db_path):
-                # print('初始化数据库：', db_path)
+                # logger.info('初始化数据库：', db_path)
                 file_name = os.path.basename(db_path)
                 if file_name in self.db_file_name:
                     index = self.db_file_name.index(file_name)
@@ -167,12 +167,12 @@ class MediaMsg(DataBaseBase):
                     tasks.append([db_path, cursor, db])
                 else:
                     shutil.copy(db_path, os.path.join(self.db_dir, 'Multi', file_name))
-        # print(tasks)
+        # logger.info(tasks)
         # 使用线程池 (没有加快合并速度)
         # with ThreadPoolExecutor(max_workers=len(tasks)) as executor:
         #     executor.map(lambda args: task_(*args), tasks)
         self.commit()
-        print(len(tasks))
+        logger.info(len(tasks))
 
 
 class Audio2TextDB:
@@ -277,5 +277,5 @@ if __name__ == '__main__':
     reserved = 5434219509914482591
     # path = media_msg_db.get_audio(reserved, r"D:\gou\message\WeChatMsg")
     is_msgSvrId_exists = audio2text_db.check_msgSvrId_exists(reserved)
-    print(is_msgSvrId_exists)
-    # print(path)
+    logger.info(is_msgSvrId_exists)
+    # logger.info(path)

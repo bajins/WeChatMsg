@@ -27,7 +27,8 @@ import pymem
 import pythoncom
 import psutil
 import pymem.process
-
+from wxManager.log import logger
+import json
 from wxManager.decrypt.common import WeChatInfo
 from wxManager.decrypt.common import get_version
 
@@ -40,7 +41,7 @@ def get_exe_bit(file_path):
         with open(file_path, 'rb') as f:
             dos_header = f.read(2)
             if dos_header != b'MZ':
-                print('get exe bit error: Invalid PE file')
+                logger.info('get exe bit error: Invalid PE file')
                 return 64
             # Seek to the offset of the PE signature
             f.seek(60)
@@ -83,7 +84,7 @@ def pattern_scan_all(handle, pattern, *, return_multiple=False, find_num=100):
                 return_multiple=return_multiple
             )
         except Exception as e:
-            print(e)
+            logger.info(e)
             break
         if not return_multiple and page_found:
             return page_found
@@ -146,7 +147,7 @@ def get_wx_dir(wxid):
                 if "%" in documents_paths[0]:
                     w_dir = os.environ.get(documents_paths[0].replace("%", ""))
                     w_dir = os.path.join(w_dir, os.path.join(*documents_paths[1:]))
-                    # print(1, w_dir)
+                    # logger.info(1, w_dir)
                 else:
                     w_dir = documents_path
             except Exception as e:
@@ -203,7 +204,7 @@ def get_key(db_path, addr_len):
     type3_addrs = pm.pattern_scan_module(phone_type3.encode(), module_name, return_multiple=True)
     type_addrs = type1_addrs if len(type1_addrs) >= 2 else type2_addrs if len(type2_addrs) >= 2 else type3_addrs if len(
         type3_addrs) >= 2 else ""
-    # print(type_addrs)
+    # logger.info(type_addrs)
     if type_addrs == "":
         return ""
     for i in type_addrs[::-1]:
@@ -215,6 +216,31 @@ def get_key(db_path, addr_len):
                 return key_bytes.hex()
     return ""
 
+def parse_version(ver_str):
+    return tuple(map(int, ver_str.split('.')))
+
+def find_version_or_prev_simple(versions_dict, target_version_str):
+    try:
+        target = parse_version(target_version_str)
+    except Exception:
+        return None
+
+    candidates = []
+    for ver_str in versions_dict.keys():
+        try:
+            ver_tuple = parse_version(ver_str)
+            candidates.append((ver_tuple, ver_str))
+        except Exception:
+            continue
+
+    # 按版本降序排序
+    candidates.sort(key=lambda x: x[0], reverse=True)
+
+    for ver_tuple, ver_str in candidates:
+        if ver_tuple <= target:
+            return ver_str, versions_dict[ver_str]
+
+    return None
 
 def dump_wechat_info_v3(version_list, pid) -> WeChatInfo:
     wechat_info = WeChatInfo()
@@ -235,7 +261,14 @@ def dump_wechat_info_v3(version_list, pid) -> WeChatInfo:
 
     Handle = ctypes.windll.kernel32.OpenProcess(0x1F0FFF, False, process.pid)
 
+    logger.info(f"当前微信进程获取到的基址：{wechat_base_address}")
+    logger.info(f"当前微信进程获取到的信息：{json.dumps(wechat_info, default=lambda obj: obj.__dict__, ensure_ascii=False)}")
     bias_list = version_list.get(wechat_info.version)
+    if bias_list is None:
+        bias_list = find_version_or_prev_simple(version_list, wechat_info.version)[1]
+    if bias_list is None:
+        bias_list = sorted(version_list.items(), key=lambda x: parse_version(x[0]), reverse=True)[0][1]
+    logger.info(f"根据当前微信版本{wechat_info.version}获取到的基址版本：{bias_list}")
     if not isinstance(bias_list, list) or len(bias_list) <= 4:
         wechat_info.errcode = 405
         wechat_info.errmsg = '错误！微信版本不匹配，请手动填写信息。'

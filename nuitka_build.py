@@ -11,6 +11,7 @@ import sys
 import subprocess
 import shutil
 import argparse
+from wxManager.log import logger
 
 def main():
     parser = argparse.ArgumentParser(description="使用Nuitka构建WeChat导出工具")
@@ -25,16 +26,16 @@ def main():
                           capture_output=True, text=True)
         if "Version:" in result.stdout:
             version = result.stdout.split("Version:")[1].split("\n")[0].strip()
-            print("Nuitka已安装，版本:", version)
+            logger.info("Nuitka已安装，版本:", version)
         else:
             raise ImportError("找不到Nuitka信息")
     except Exception:
-        print("未找到Nuitka，正在安装...")
+        logger.info("未找到Nuitka，正在安装...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "nuitka"])
     
     # 清理之前的构建
     if args.clean:
-        print("清理之前的构建文件...")
+        logger.info("清理之前的构建文件...")
         build_dirs = [
             "run_wechat_export.build",
             "run_wechat_export.dist",
@@ -80,11 +81,11 @@ def main():
     cmd.append("run_wechat_export.py")
     
     # 执行构建
-    print("开始构建...")
-    print(" ".join(cmd))
+    logger.info("开始构建...")
+    logger.info(" ".join(cmd))
     subprocess.check_call(cmd)
     
-    print("\n构建完成! 可执行文件位于 WeChatExporter.exe")
+    logger.info("\n构建完成! 可执行文件位于 WeChatExporter.exe")
 
 if __name__ == "__main__":
     main() 

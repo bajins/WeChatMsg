@@ -53,7 +53,7 @@ def decompress(data):
         dst = lz4.block.decompress(data, uncompressed_size=len(data) << 10)
         decoded_string = dst.decode().replace("\x00", "")  # Remove any null characters
     except:
-        print(
+        logger.info(
             "Decompression failed: potentially corrupt input or insufficient buffer size."
         )
         return ""
@@ -572,7 +572,7 @@ class MergedMessageFactory(MessageFactory, Singleton):
                                                                  thumb=True, talker_username=username)
                     if not os.path.exists(os.path.join(Me().wx_dir, inner_msg.path)) or inner_msg.path == '.':
                         inner_msg.path = f'FileStorage/MsgAttach/{hashlib.md5(username.encode("utf-8")).hexdigest()}/Thumb/{month}/{inner_msg.md5}_{2}.dat'
-                    print(inner_msg.path)
+                    logger.info(inner_msg.path)
                 elif inner_msg.type == MessageType.Video:
                     if dir0:
                         inner_msg.path = os.path.join('msg', 'attach',

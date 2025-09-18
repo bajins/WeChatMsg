@@ -15,6 +15,7 @@ import psutil
 from wxManager.decrypt.wx_info_v3 import dump_wechat_info_v3
 from wxManager.decrypt.wx_info_v4 import dump_wechat_info_v4
 from wxManager.decrypt.common import WeChatInfo
+from wxManager.log import logger
 
 
 def get_info_v4() -> List[WeChatInfo]:
@@ -58,4 +59,4 @@ if __name__ == "__main__":
     r_4 = get_info_v4()
     r_3 = get_info_v3(version_list)
     for wx_info in r_4+r_3:
-        print(wx_info)
+        logger.info(wx_info)

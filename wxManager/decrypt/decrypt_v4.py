@@ -6,6 +6,7 @@ from concurrent.futures import ProcessPoolExecutor
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Hash import SHA512
+from wxManager.log import logger
 
 # Constants
 IV_SIZE = 16
@@ -20,14 +21,14 @@ SQLITE_HEADER = b"SQLite format 3"
 
 def decrypt_db_file_v4(pkey, in_db_path, out_db_path):
     if not os.path.exists(in_db_path):
-        print(f"【!!!】{in_db_path} does not exist.")
+        logger.info(f"【!!!】{in_db_path} does not exist.")
         return False
 
     with open(in_db_path, 'rb') as f_in, open(out_db_path, 'wb') as f_out:
         # Read salt from the first SALT_SIZE bytes
         salt = f_in.read(SALT_SIZE)
         if not salt:
-            print("File is empty or corrupted.")
+            logger.info("File is empty or corrupted.")
             return False
 
         mac_salt = bytes(x ^ 0x3a for x in salt)
@@ -62,14 +63,14 @@ def decrypt_db_file_v4(pkey, in_db_path, out_db_path):
                 page = f_in.read(PAGE_SIZE)
             if not page:
                 break  # End of file
-            # print(f'第{cur_page + 1}页')
+            # logger.info(f'第{cur_page + 1}页')
             offset = SALT_SIZE if cur_page == 0 else 0
             end = len(page)
 
             # If the page is all zero bytes, append it directly and exit
             if all(x == 0 for x in page):
                 f_out.write(page)
-                print("Exiting early due to zeroed page.")
+                logger.info("Exiting early due to zeroed page.")
                 break
 
             # Perform HMAC check
@@ -80,7 +81,7 @@ def decrypt_db_file_v4(pkey, in_db_path, out_db_path):
             # Check if HMAC matches
             hash_mac_start_offset = end - reserve + IV_SIZE
             if hash_mac != page[hash_mac_start_offset:hash_mac_start_offset + len(hash_mac)]:
-                print(f'Key error: {key}')
+                logger.info(f'Key error: {key}')
                 return None
                 raise ValueError("Hash verification failed")
 
@@ -99,7 +100,7 @@ def decrypt_db_file_v4(pkey, in_db_path, out_db_path):
 
             cur_page += 1
 
-    print("Decryption completed.")
+    logger.info("Decryption completed.")
     return True
 
 
@@ -110,7 +111,7 @@ def decode_wrapper(tasks):
 
 def decrypt_db_files(key, src_dir: str, dest_dir: str):
     if not os.path.exists(src_dir):
-        print(f"源文件夹 {src_dir} 不存在")
+        logger.info(f"源文件夹 {src_dir} 不存在")
         return
 
     if not os.path.exists(dest_dir):
@@ -130,7 +131,7 @@ def decrypt_db_files(key, src_dir: str, dest_dir: str):
                 # 确保目标子文件夹存在
                 if not os.path.exists(dest_sub_dir):
                     os.makedirs(dest_sub_dir)
-                print(dest_file_path)
+                logger.info(dest_file_path)
                 decrypt_tasks.append((key, src_file_path, dest_file_path))
                 # decrypt_db_file_v4(key, src_file_path, dest_file_path)
     with ProcessPoolExecutor(max_workers=16) as executor:

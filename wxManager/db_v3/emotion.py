@@ -5,6 +5,7 @@ import traceback
 
 from wxManager.merge import increase_data
 from wxManager.model import DataBaseBase
+from wxManager.log import logger
 
 lock = threading.Lock()
 # db_path = "./app/Database/Msg/Emotion.db"
@@ -120,7 +121,7 @@ class Emotion(DataBaseBase):
 
     def merge(self, db_path):
         if not (os.path.exists(db_path) or os.path.isfile(db_path)):
-            print(f'{db_path} 不存在')
+            logger.info(f'{db_path} 不存在')
             return
         try:
             cursor = self.DB.cursor()
@@ -131,5 +132,5 @@ class Emotion(DataBaseBase):
             increase_data(db_path, cursor, self.DB, 'EmotionPackageItem', 'ProductId', 0, 'localId')
             increase_data(db_path, cursor, self.DB, 'EmotionOrderInfo', 'MD5', 0, 'localId')
         except:
-            print(f"数据库操作错误: {traceback.format_exc()}")
+            logger.info(f"数据库操作错误: {traceback.format_exc()}")
             self.DB.rollback()

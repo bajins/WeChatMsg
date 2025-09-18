@@ -193,7 +193,7 @@ class DataBaseV3(DataBaseInterface):
         self.audio2text_db = Audio2TextDB('Audio2Text.db')
 
     def init_database(self, db_dir=''):
-        # print('初始化数据库', db_dir)
+        # logger.info('初始化数据库', db_dir)
         Me().load_from_json(os.path.join(db_dir, 'info.json'))  # 加载自己的信息
         flag = True
         self.db_dir = db_dir
@@ -258,7 +258,7 @@ class DataBaseV3(DataBaseInterface):
         #     messages = self.msg_db.get_messages_by_username(username_, time_range)
         # result = []
         # for messages_ in messages:
-        #     print(len(messages_))
+        #     logger.info(len(messages_))
         #     for message in parser_messages(messages_, username_, self.db_dir):
         #         result.append(message)
         # result.sort()
@@ -294,7 +294,7 @@ class DataBaseV3(DataBaseInterface):
             # # Step 2: Use multiprocessing to process the message batches
             # res = []
             # for batch in raw_message_batches:
-            #     print(len(batch))
+            #     logger.info(len(batch))
 
             with ProcessPoolExecutor(max_workers=min(len(raw_message_batches), 16)) as executor:
                 # Submit tasks
@@ -693,6 +693,6 @@ class DataBaseV3(DataBaseInterface):
                 db, path = futures[future]
                 try:
                     future.result()  # 这里会抛出异常（如果有的话）
-                    print(f"成功合并数据库: {path}")
+                    logger.info(f"成功合并数据库: {path}")
                 except Exception as e:
-                    print(f"合并 {path} 失败: {e}")
+                    logger.info(f"合并 {path} 失败: {e}")

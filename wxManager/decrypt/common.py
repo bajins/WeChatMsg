@@ -33,7 +33,7 @@ class WeChatInfo:
         self.key = ''
         self.wxid = ''
         self.errcode: int = 404  # 405: 版本不匹配, 404: 重新登录微信, other: 未知错误
-        self.errmsg: str = '错误！请登录微信。'
+        self.errmsg: str = '' # '错误！请登录微信。'
 
     def __str__(self):
         return f'''

@@ -23,6 +23,10 @@ import importlib.util
 import subprocess
 from PIL import Image, ImageTk
 import io
+from pathlib import Path
+import config
+from wxManager.log import logger
+
 
 # Add the parent directory to the path to import the required modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -97,30 +101,29 @@ class WeChatExportGUI:
 
         # 导入配置模块
         try:
-            import config
             self.config = config.load_config()
         except ImportError:
             # 如果配置模块不存在，使用默认值
-            self.config = {
-                "db_dir": "",
-                "db_version": 3,
-                "output_dir": "./data/",
-                "last_export_format": "HTML",
-                "recent_contacts": [],
-                "recent_databases": []
-            }
+            self.config = config.DEFAULT_CONFIG
             self.log_message_console("未找到配置模块，使用默认配置")
 
         # Create custom styles
         self.create_custom_styles()
 
+        logger.info(f"加载的配置信息：{self.config}")
+
         # Create variables
-        self.db_dir = tk.StringVar()
+        self.db_dir = tk.StringVar(value=self.config.get("db_dir", ""))
         self.db_version = tk.IntVar(value=self.config.get("db_version", 3))
         self.output_dir = tk.StringVar(value=self.config.get("output_dir", "./data/"))
         self.selected_wxid = tk.StringVar()
         self.search_text = tk.StringVar()
-        self.search_text.trace("w", self.filter_contacts)
+        # self.search_text.trace_add("w", self.filter_contacts)
+        # 兼容性写法
+        if hasattr(self.search_text, 'trace_add'):
+            self.search_text.trace_add("write", self.filter_contacts)
+        else:
+            self.search_text.trace("w", self.filter_contacts)  # 旧方法
 
         # 如果配置中有数据库目录，设置它
         if self.config.get("db_dir"):
@@ -150,8 +153,11 @@ class WeChatExportGUI:
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         # 如果配置中有数据库目录，自动尝试连接
-        if self.config.get("db_dir") and os.path.exists(self.config.get("db_dir")):
+        if self.config.get("db_dir") and any(file.suffix.lower() == '.db' for file in Path(self.config.get("db_dir")).iterdir() if file.is_file()):
             self.root.after(1000, lambda: self.auto_connect_database())
+        else:
+            # UI切换到设置标签页进行解密
+            self.notebook.select(1)
 
         # 初始化联系人头像缓存
         self.contact_avatar_cache = {}
@@ -385,11 +391,65 @@ class WeChatExportGUI:
 
         self.contacts_frame.bind("<Configure>", _configure_canvas)
 
-        # 鼠标滚轮绑定
-        def _on_mousewheel(event):
-            contacts_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        # ========== 鼠标滚轮绑定逻辑 修复滚动联动问题 ==========
 
-        contacts_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        # 定义一个通用的、跨平台的滚轮事件处理函数
+        def _on_mousewheel(event, widget):
+            """
+            在一个指定的 widget 上处理鼠标滚轮事件 (跨平台).
+            """
+            # 统一处理不同平台的滚动事件
+            # Windows/macOS 使用 event.delta，正值向上，负值向下
+            # Linux 使用 event.num，4是向上，5是向下
+            if event.num == 4 or (hasattr(event, 'delta') and event.delta > 0):
+                widget.yview_scroll(-1, "units")
+            elif event.num == 5 or (hasattr(event, 'delta') and event.delta < 0):
+                widget.yview_scroll(1, "units")
+            # 返回 "break" 可以阻止事件继续传播给父控件，但在这种场景下非必需
+            return "break"
+
+        # 定义在鼠标进入/离开左侧面板时要执行的函数
+        def _bind_scroll_for_left_panel(event):
+            """当鼠标进入 left_panel 时，将滚轮事件全局绑定到 contacts_canvas"""
+            # 使用 bind_all 意味着在窗口任何位置滚动都会触发
+            # 我们用 lambda 来确保 _on_mousewheel 知道要滚动哪个控件 (contacts_canvas)
+            contacts_canvas.bind_all("<MouseWheel>", lambda e: _on_mousewheel(e, contacts_canvas))
+            # 兼容 Linux
+            contacts_canvas.bind_all("<Button-4>", lambda e: _on_mousewheel(e, contacts_canvas))
+            contacts_canvas.bind_all("<Button-5>", lambda e: _on_mousewheel(e, contacts_canvas))
+
+        def _unbind_scroll_for_left_panel(event):
+            """当鼠标离开 left_panel 时，解除所有全局滚轮绑定"""
+            # 解除绑定后，右侧面板中的控件就可以自由响应自己的滚动事件了
+            contacts_canvas.unbind_all("<MouseWheel>")
+            contacts_canvas.unbind_all("<Button-4>")
+            contacts_canvas.unbind_all("<Button-5>")
+
+        # 将这些函数绑定到 left_panel 的 <Enter> 和 <Leave> 事件上
+        # 当鼠标进入 left_panel 区域时，激活全局滚动
+        left_panel.bind('<Enter>', _bind_scroll_for_left_panel)
+        # 当鼠标离开 left_panel 区域时（例如进入了right_panel），取消全局滚动
+        left_panel.bind('<Leave>', _unbind_scroll_for_left_panel)
+
+        # 创建一个递归函数来为控件及其所有子控件绑定事件
+        def bind_mousewheel_recursively(widget, target_widget):
+            """
+            为 widget 及其所有子控件绑定滚轮事件。
+            所有事件都会作用于 target_widget。
+            """
+            # 为当前 widget 绑定
+            widget.bind('<MouseWheel>', lambda e, t=target_widget: _on_mousewheel(e, t))
+            widget.bind('<Button-4>', lambda e, t=target_widget: _on_mousewheel(e, t)) # For Linux
+            widget.bind('<Button-5>', lambda e, t=target_widget: _on_mousewheel(e, t)) # For Linux
+            
+            # 递归地为所有子控件绑定
+            for child in widget.winfo_children():
+                bind_mousewheel_recursively(child, target_widget)
+
+        # 使用递归函数，为容器框架及其未来所有子项（即联系人条目）绑定滚动事件
+        # 这样，无论鼠标在哪个联系人上，滚动的都是 contacts_canvas
+        bind_mousewheel_recursively(self.contacts_frame, contacts_canvas)
+
 
         # ========== 右侧面板 - 联系人详情和导出功能 ==========
 
@@ -871,6 +931,55 @@ class WeChatExportGUI:
                 display_text = f"{history_item['name']} ({history_item['wxid']}) - 微信{history_item['version']}"
                 self.decrypt_history_listbox.insert(tk.END, display_text)
 
+    def show_loading_overlay(self):
+        """创建一个覆盖主窗口的遮罩层，以阻止用户交互。"""
+        # 获取主窗口 (root)
+        root = self.notebook.winfo_toplevel()
+
+        # 创建一个新的顶层窗口作为遮罩层
+        self.overlay = tk.Toplevel(root)
+        
+        # 设置遮罩层的位置和大小，使其完全覆盖主窗口
+        x = root.winfo_x()
+        y = root.winfo_y()
+        w = root.winfo_width()
+        h = root.winfo_height()
+        self.overlay.geometry(f'{w}x{h}+{x}+{y}')
+        
+        # 移除窗口边框和标题栏
+        self.overlay.overrideredirect(True)
+        
+        # 设置半透明效果 (可选，但推荐)
+        try:
+            self.overlay.attributes('-alpha', 0.6)
+        except tk.TclError:
+            # 在某些操作系统或环境下可能不支持透明
+            self.overlay.config(bg='gray')
+
+        # 在遮罩层中央显示“加载中”的提示信息
+        loading_label = ttk.Label(
+            self.overlay, 
+            text="正在加载联系人，请稍候...", 
+            font=("微软雅黑", 16),
+            background="white", # 给标签一个背景色，使其更清晰
+            padding=10
+        )
+        loading_label.pack(expand=True)
+
+        # *** 关键步骤 ***
+        # grab_set() 会捕获此应用程序的所有事件，直到它被释放。
+        # 这就实现了阻止用户与主窗口交互的目的。
+        self.overlay.grab_set()
+        
+    def hide_loading_overlay(self):
+        """销毁遮罩层，恢复用户交互。"""
+        if hasattr(self, 'overlay') and self.overlay.winfo_exists():
+            # 释放事件捕获
+            self.overlay.grab_release()
+            self.overlay.destroy()
+            # 删除属性，以便下次检查
+            del self.overlay
+
     def on_recent_db_select(self, event):
         """处理选择最近使用的数据库"""
         selection = self.recent_db_listbox.curselection()
@@ -917,6 +1026,9 @@ class WeChatExportGUI:
         if self.load_button:
             self.load_button.config(state=tk.DISABLED, text="正在加载...")
 
+        # 显示遮罩层，立即阻止用户点击
+        self.show_loading_overlay()
+
         # 更新状态
         self.load_status_var.set("正在加载联系人...")
 
@@ -950,6 +1062,8 @@ class WeChatExportGUI:
             self.load_status_var.set("未找到数据库文件")
             if self.load_button:
                 self.load_button.config(state=tk.NORMAL, text="加载联系人")
+            # UI切换到设置标签页进行解密
+            self.notebook.select(1)
             return
 
         # 列出找到的数据库文件
@@ -968,7 +1082,6 @@ class WeChatExportGUI:
 
         # 保存当前数据库设置到配置
         try:
-            import config
             self.config = config.add_recent_database(self.config, db_dir, db_version)
             config.save_config(self.config)
         except ImportError:
@@ -1035,7 +1148,7 @@ class WeChatExportGUI:
                 self.log_message(self.contacts_log, f"get_contacts() 返回结果类型: {type(self.contacts)}")
                 self.log_message(self.contacts_log, f"联系人列表长度: {len(self.contacts) if self.contacts else 0}")
             except Exception as e:
-                self.log_message(self.contacts_log, f"获取联系人列表时出错: {str(e)}")
+                self.log_message(self.contacts_log, f"获取联系人列表时出错{db_dir}: {str(e)}")
                 self.log_message(self.contacts_log, traceback.format_exc())
                 self.root.after(0, lambda: self.load_status_var.set("获取联系人列表失败"))
                 raise  # 重新抛出异常，让外层的 try-except 捕获
@@ -1093,10 +1206,18 @@ class WeChatExportGUI:
             self.root.after(0, lambda: messagebox.showerror("错误", error_msg))
             self.status_var.set("联系人加载失败")
             self.root.after(0, lambda: self.load_status_var.set("加载失败"))
+            logger.info(db_dir)
+            # 检查解密后的数据库路径是否存在
+            if not any(file.suffix.lower() == '.db' for file in Path(self.config.get("db_dir")).iterdir() if file.is_file()) :
+                # UI切换到设置标签页进行解密
+                self.notebook.select(1)
 
             # Re-enable the button
             if self.load_button:
                 self.root.after(0, lambda: self.load_button.config(state=tk.NORMAL, text="加载联系人"))
+        finally:
+            # 无论成功还是失败，最后都必须在主线程中销毁遮罩层。
+            self.notebook.after(0, self.hide_loading_overlay)
 
     def _update_contacts_list(self):
         """Update the contacts listbox with performance optimizations"""
@@ -1615,10 +1736,11 @@ class WeChatExportGUI:
             # Show success message
             self.root.after(0, lambda: messagebox.showinfo("成功", f"导出完成，文件保存在 {output_dir}"))
         except Exception as e:
-            self.log_message(self.export_log, f"导出过程中出错: {str(e)}")
+            err_msg = f"导出过程中出错: {str(e)}"
+            self.log_message(self.export_log, err_msg)
             self.log_message(self.export_log, traceback.format_exc())
             self.status_var.set("导出失败")
-            self.root.after(0, lambda: messagebox.showerror("错误", f"导出过程中出错: {str(e)}"))
+            self.root.after(0, lambda: messagebox.showerror("错误", err_msg))
 
     def _load_avatar(self, contact):
         """加载并显示联系人头像"""
@@ -1670,13 +1792,14 @@ class WeChatExportGUI:
 
     def browse_db_dir(self):
         """Browse for database directory"""
-        directory = filedialog.askdirectory(title="选择数据库目录")
+        directory = filedialog.askdirectory(title="选择数据库目录", initialdir=self.db_dir.get())
         if directory:
             self.db_dir.set(directory)
 
     def browse_output_dir(self):
         """Browse for output directory"""
-        directory = filedialog.askdirectory(title="选择输出目录")
+        # 程序所在目录 initialdir = os.path.dirname(os.path.abspath(__file__))
+        directory = filedialog.askdirectory(title="选择输出目录", initialdir = os.getcwd())
         if directory:
             self.output_dir.set(directory)
 
@@ -1759,7 +1882,6 @@ class WeChatExportGUI:
 
                 # 保存数据库信息到配置
                 try:
-                    import config
                     self.config = config.add_recent_database(self.config, db_dir, db_version)
                     config.save_config(self.config)
                 except ImportError:
@@ -1770,7 +1892,7 @@ class WeChatExportGUI:
                 self.root.after(0, lambda: messagebox.showinfo("测试成功", success_msg))
                 self.root.after(0, lambda: self.load_status_var.set(success_msg))
             except Exception as e:
-                self.log_message(self.contacts_log, f"获取联系人时出错: {str(e)}")
+                self.log_message(self.contacts_log, f"获取联系人时出错{db_dir}: {str(e)}")
                 self.log_message(self.contacts_log, traceback.format_exc())
                 self.root.after(0, lambda: messagebox.showwarning("警告", f"数据库连接成功，但获取联系人时出错: {str(e)}"))
                 self.root.after(0, lambda: self.load_status_var.set("连接成功，但获取联系人失败"))
@@ -1784,6 +1906,10 @@ class WeChatExportGUI:
             self.root.after(0, lambda: self.load_status_var.set("测试连接失败"))
             if hasattr(self, 'test_button'):
                 self.root.after(0, lambda: self.test_button.config(state=tk.NORMAL, text="测试连接"))
+        if self.notebook.index("current") != 0 :
+            # UI切换到联系人管理标签页查看测试信息
+            self.notebook.select(0)
+
 
     def start_decrypt(self):
         """开始数据库解密过程"""
@@ -1811,19 +1937,23 @@ class WeChatExportGUI:
                     return
 
                 r_3 = get_info_v3(version_list)
+                logger.info(f"获取到的版本信息：{[vars(obj) for obj in r_3]}")
+                # logger.info(f"获取到的版本信息：{json.dumps(r_3, default=lambda obj: obj.__dict__, ensure_ascii=False)}")
                 if not r_3:
                     self.log_message(self.decrypt_log, "未找到微信3.x版本信息，请确保微信已启动")
                     self.status_var.set("解密失败")
                     return
 
                 for wx_info in r_3:
+                    if wx_info.errcode != 200 :
+                        raise Exception(f"错误: {wx_info.errcode} {wx_info.errmsg}")
                     self.log_message(self.decrypt_log, f"找到微信账号: {wx_info.wxid} ({wx_info.nick_name})")
                     me = Me()
                     me.wx_dir = wx_info.wx_dir
                     me.wxid = wx_info.wxid
                     me.name = wx_info.nick_name
                     info_data = me.to_json()
-                    output_dir = wx_info.wxid
+                    output_dir = os.path.join(self.output_dir.get(), wx_info.wxid) # 数据库输出文件夹
                     key = wx_info.key
                     if not key:
                         self.log_message(self.decrypt_log, "错误! 未找到key，请重启微信后再试")
@@ -1834,7 +1964,7 @@ class WeChatExportGUI:
                     decrypt_v3.decrypt_db_files(key, src_dir=wx_dir, dest_dir=output_dir)
 
                     # 导出的数据库在 output_dir/Msg 文件夹下，后面会用到
-                    db_path = os.path.join(output_dir, "Msg")
+                    db_path = output_dir + "/Msg"
                     with open(os.path.join(db_path, 'info.json'), 'w', encoding='utf-8') as f:
                         json.dump(info_data, f, ensure_ascii=False, indent=4)
 
@@ -1843,7 +1973,6 @@ class WeChatExportGUI:
 
                     # 保存解密历史记录
                     try:
-                        import config
                         self.config = config.add_decrypt_history(
                             self.config, wx_info.wxid, wx_info.nick_name, db_path, 3
                         )
@@ -1876,7 +2005,7 @@ class WeChatExportGUI:
                     me.name = wx_info.nick_name
                     me.xor_key = get_decode_code_v4(wx_info.wx_dir)
                     info_data = me.to_json()
-                    output_dir = wx_info.wxid  # 数据库输出文件夹
+                    output_dir = os.path.join(self.output_dir.get(), wx_info.wxid) # 数据库输出文件夹
                     key = wx_info.key
                     if not key:
                         self.log_message(self.decrypt_log, "错误! 未找到key，请重启微信后再试")
@@ -1896,7 +2025,6 @@ class WeChatExportGUI:
 
                     # 保存解密历史记录
                     try:
-                        import config
                         self.config = config.add_decrypt_history(
                             self.config, wx_info.wxid, wx_info.nick_name, db_path, 4
                         )
@@ -1915,10 +2043,10 @@ class WeChatExportGUI:
                         pass
 
             self.status_var.set("数据库解密完成")
-            # 自动切换到联系人管理标签页
-            self.notebook.select(0)
+            # UI切换到联系人管理标签页
+            # self.notebook.select(0)
             # 自动尝试连接数据库
-            self.root.after(1000, self.test_database_connection)
+            # self.root.after(1000, self.test_database_connection)
         except Exception as e:
             self.log_message(self.decrypt_log, f"解密过程中出错: {str(e)}")
             self.log_message(self.decrypt_log, traceback.format_exc())
@@ -1959,7 +2087,6 @@ class WeChatExportGUI:
                 # 更新配置
                 self.config["report_api_url"] = api_url
                 try:
-                    import config
                     config.save_config(self.config)
                 except ImportError:
                     pass
@@ -1986,7 +2113,6 @@ class WeChatExportGUI:
     def save_current_config(self):
         """保存当前配置"""
         try:
-            import config
 
             # 更新配置
             self.config["db_dir"] = self.db_dir.get()
@@ -2029,7 +2155,7 @@ class WeChatExportGUI:
 
     def log_message_console(self, message):
         """直接在控制台输出日志，不使用GUI组件"""
-        print(f"[WeChat Export] {message}")
+        logger.info(f"[WeChat Export] {message}")
 
 
 if __name__ == "__main__":

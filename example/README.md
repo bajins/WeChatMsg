@@ -56,7 +56,7 @@ def export():
 
     exporter.start()
     et = time.time()
-    print(f'耗时：{et - st:.2f}s')
+    logger.info(f'耗时：{et - st:.2f}s')
 
 
 if __name__ == '__main__':

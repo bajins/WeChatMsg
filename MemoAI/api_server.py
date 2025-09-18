@@ -44,6 +44,7 @@ from utils import process_response, generate_chatglm3, generate_stream_chatglm3
 from sentence_transformers import SentenceTransformer
 
 from sse_starlette.sse import EventSourceResponse
+from wxManager.log import logger
 
 # Set up limit request time
 EventSourceResponse.DEFAULT_PING_INTERVAL = 1000
@@ -242,7 +243,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
             messages = insert_custom_message(request.messages)
         else:
             messages = request.messages
-    print(type(request.messages), request.messages)
+    logger.info(type(request.messages), request.messages)
     gen_params = dict(
         messages=messages,
         temperature=request.temperature,
@@ -261,7 +262,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
         predict_stream_generator = predict_stream(request.model, gen_params)
         # return EventSourceResponse(predict_stream_generator, media_type="text/event-stream")
         output = next(predict_stream_generator)
-        print(output)
+        logger.info(output)
         # logger.debug(f"First result output：\n{output}")
         if not contains_custom_function(output):
             return EventSourceResponse(predict_stream_generator, media_type="text/event-stream")
@@ -438,8 +439,8 @@ def predict_stream(model_id, gen_params):
     output = ""
     is_function_call = False
     has_send_first_chunk = False
-    print('参数')
-    print(model_id,gen_params)
+    logger.info('参数')
+    logger.info(model_id,gen_params)
     for new_response in generate_stream_chatglm3(model, tokenizer, gen_params):
         decoded_unicode = new_response["text"]
         delta_text = decoded_unicode[len(output):]

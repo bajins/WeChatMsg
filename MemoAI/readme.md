@@ -20,7 +20,7 @@ train_res = []
 for filepath, dirnames, filenames in os.walk(data_dir):
     for filename in filenames:
         if filename.endswith('.json'):
-            print(filename, filepath)
+            logger.info(filename, filepath)
             filepath_ = os.path.join(filepath, filename)
             with open(filepath_, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -430,12 +430,12 @@ def simple_chat(use_stream=True):
     if response:
         if use_stream:
             for chunk in response:
-                print(chunk.choices[0].delta.content, end='')
+                logger.info(chunk.choices[0].delta.content, end='')
         else:
             content = response.choices[0].message.content
-            print(content)
+            logger.info(content)
     else:
-        print("Error:", response.status_code)
+        logger.info("Error:", response.status_code)
 
 if __name__ == "__main__":
     simple_chat(use_stream=True)

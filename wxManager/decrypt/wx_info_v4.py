@@ -27,6 +27,8 @@ import yara
 
 from wxManager.decrypt.common import WeChatInfo
 from wxManager.decrypt.common import get_version
+from wxManager.log import logger
+
 
 # 定义必要的常量
 PROCESS_ALL_ACCESS = 0x1F0FFF
@@ -134,8 +136,8 @@ def read_string(data: bytes, offset, size):
     try:
         return data[offset:offset + size].decode('utf-8')
     except:
-        # print(data[offset:offset + size])
-        # print(traceback.format_exc())
+        # logger.info(data[offset:offset + size])
+        # logger.info(traceback.format_exc())
         return ''
 
 
@@ -243,7 +245,7 @@ def is_ok(passphrase, buf):
     hash_mac_start_offset = end - reserve + IV_SIZE
     hash_mac_end_offset = hash_mac_start_offset + len(hash_mac)
     if hash_mac == buf[hash_mac_start_offset:hash_mac_end_offset]:
-        print(f"[v] found key at 0x{start:x}")
+        logger.info(f"[v] found key at 0x{start:x}")
         finish_flag = True
         return True
     return False
@@ -264,7 +266,7 @@ def verify_key(key: bytes, buffer: bytes, flag, result):
     if flag.value:  # 如果其他进程已找到结果，提前退出
         return False
     if is_ok(key, buffer):  # 替换为实际的目标检测条件
-        print("Key found!", key)
+        logger.info("Key found!", key)
         with flag.get_lock():  # 保证线程安全
             flag.value = True
             return key
@@ -280,7 +282,7 @@ def get_key_(keys, buf):
 
     for r in results:
         if r:
-            print("Key found!", r)
+            logger.info("Key found!", r)
             return bytes.hex(r)
     return None
 
@@ -394,7 +396,7 @@ def get_wx_dir(process_handle):
 def get_nickname(pid):
     process_handle = open_process(pid)
     if not process_handle:
-        print(f"无法打开进程 {pid}")
+        logger.info(f"无法打开进程 {pid}")
         return {}
     process_infos = get_memory_regions(process_handle)
     # 加载规则
@@ -437,17 +439,17 @@ def get_nickname(pid):
                         data_slice = target_data[offset:offset + 8]
                         # 使用 struct.unpack() 将字节转换为 u64，'<Q' 表示小端字节序的 8 字节无符号整数
                         nick_name_length = struct.unpack('<Q', data_slice)[0]
-                        # print('nick_name_length', nick_name_length)
+                        # logger.info('nick_name_length', nick_name_length)
                         nick_name = read_string(target_data, phone_addr - 0x20, nick_name_length)
                         a = target_data[phone_addr - 0x60:phone_addr + 0x50]
                         account_name_length = read_num(target_data, phone_addr - 0x30, 8)
-                        # print('account_name_length', account_name_length)
+                        # logger.info('account_name_length', account_name_length)
                         account_name = read_string(target_data, phone_addr - 0x40, account_name_length)
                         # with open('a.bin', 'wb') as f:
                         #     f.write(target_data)
                         if not account_name:
                             addr = read_num(target_data, phone_addr - 0x40, 8)
-                            # print(hex(addr))
+                            # logger.info(hex(addr))
                             account_name = read_string_from_pid(pid, addr, account_name_length)
     return {
         'nick_name': nick_name,
@@ -467,7 +469,7 @@ def dump_wechat_info_v4(pid) -> WeChatInfo | None:
     wechat_info.version = get_version(pid)
     process_handle = open_process(pid)
     if not process_handle:
-        print(f"无法打开进程 {pid}")
+        logger.info(f"无法打开进程 {pid}")
         return wechat_info
     queue = multiprocessing.Queue()
     process = multiprocessing.Process(target=worker, args=(pid, queue))
@@ -475,7 +477,7 @@ def dump_wechat_info_v4(pid) -> WeChatInfo | None:
     process.start()
 
     wechat_info.wx_dir = get_wx_dir(process_handle)
-    # print(wx_dir_cnt)
+    # logger.info(wx_dir_cnt)
     if not wechat_info.wx_dir:
         return wechat_info
     db_file_path = os.path.join(wechat_info.wx_dir, 'favorite', 'favorite_fts.db')
@@ -506,6 +508,6 @@ if __name__ == '__main__':
     pm = pymem.Pymem("Weixin.exe")
     pid = pm.process_id
     w = dump_wechat_info_v4(pid)
-    print(w)
+    logger.info(w)
     et = time.time()
-    print(et - st)
+    logger.info(et - st)
